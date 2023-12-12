@@ -1,0 +1,22 @@
+/* ./src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+
+/* global css */
+
+body, html {
+    width: 100%;
+    height: 100%;
+}
+
+
+#app {
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    /* background-image: url('./assets/texture.png'); */
+}
