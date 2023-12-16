@@ -96,12 +96,14 @@ const (
 type DataType string
 
 const (
-	READDIR      DataType = "DIRREAD"
-	DIRREADRESP  DataType = "DIRREADRESP"
-	DEFAULT      DataType = "DEFAULT"
-	READFILE     DataType = "READFILE"
-	READFILERESP DataType = "READFILERESP"
-	ERROR        DataType = "ERROR"
+	READDIR        DataType = "DIRREAD"
+	READDIRRESP    DataType = "DIRREADRESP"
+	DEFAULT        DataType = "DEFAULT"
+	READFILE       DataType = "READFILE"
+	READFILERESP   DataType = "READFILERESP"
+	MODIFYFILE     DataType = "FILEMODIFY"
+	MODIFYFILERESP DataType = "FILEMODIFYRESP"
+	ERROR          DataType = "ERROR"
 )
 
 type Msg struct {

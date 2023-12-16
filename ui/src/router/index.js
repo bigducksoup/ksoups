@@ -4,8 +4,16 @@ const routes = [
 
     {
         path: "/",
-        component: () => import("../pages/index.vue")
+        component: () => import("../pages/index.vue"),    
+        children: [
+            {
+                path: ":addr",
+                name: "console",
+                component: () => import("../pages/console.vue"),
+            }
+        ]  
     }
+
 ]
 
 

@@ -1,37 +1,47 @@
 package connect
 
 import (
+	"config-manager/probe/common"
+	"config-manager/probe/handlers"
+	"context"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"time"
 )
 
-func InitConnect(addr string) {
+func InitConnect(addr string, ctx context.Context) {
 
 	//create a connection
-	connection := createConnection(addr)
+	connection := common.CreateConnection(addr)
 	//goroutine for heartbeat
-	go heartBeat(&connection)
+	go heartBeat(&connection, ctx)
 
-	//receive message
 	for true {
-		msg, err := connection.Receive()
-		if err == io.EOF {
+		select {
+		case <-ctx.Done():
+			log.Println("stop accept message")
+			log.Println(ctx.Err())
 			return
+
+		default:
+			msg, err := connection.Receive()
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				log.Println(err)
+			}
+			go handlers.HandleMessage(msg, &connection)
 		}
-		if err != nil {
-			fmt.Println(err)
-		}
-		HandleMessage(msg, &connection)
+
 	}
 
 }
 
 // do heart beat
 // if beat did not receive response, try to reconnect
-func heartBeat(connection *Connection) {
+func heartBeat(connection *common.Connection, ctx context.Context) {
 
 	//create a ticker
 	ticker := time.NewTicker(3 * time.Second)
@@ -39,7 +49,7 @@ func heartBeat(connection *Connection) {
 	//define a func for reconnecting
 	tryReconnect := func(n int) {
 		for i := 0; i < n; i++ {
-			err := connection.reconnect()
+			err := connection.Reconnect()
 			if err == nil {
 				break
 			}
@@ -50,9 +60,12 @@ func heartBeat(connection *Connection) {
 	//tick
 	for true {
 		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
 		case <-ticker.C:
 			//di ping
-			ping := connection.ping()
+			ping := connection.Ping()
 			if ping {
 				continue
 			}

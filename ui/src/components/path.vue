@@ -1,6 +1,6 @@
 
 <template>
-    <div>
+    <div class="text-white">
         <span @click="onClick('/',-1)" class="hover:underline hover:cursor-pointer" >@</span><span>/</span>
         <span v-for="(p,index) in pathes"> <span @click="onClick(p,index)" class="hover:underline hover:cursor-pointer" >{{ p }}</span><span>/</span></span>
     </div>

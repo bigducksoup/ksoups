@@ -1,12 +1,11 @@
-package connect
+package common
 
 import (
 	"bufio"
-	"config-manager/core/message"
-	"config-manager/core/utils"
+	"config-manager/common/message"
+	"config-manager/common/utils"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net"
@@ -21,7 +20,7 @@ type Connection struct {
 	reader    *bufio.Reader
 }
 
-func createConnection(addr string) Connection {
+func CreateConnection(addr string) Connection {
 
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -83,7 +82,21 @@ func (c *Connection) SendMessage(msg message.Msg) error {
 	return nil
 }
 
-func (c *Connection) ping() bool {
+func (c *Connection) RespErr(id string, err error) {
+
+	errResp := message.Msg{
+		Type:     message.RESPONSE,
+		Id:       id,
+		ErrMark:  true,
+		DataType: message.ERROR,
+		Data:     []byte(err.Error()),
+	}
+
+	c.SendMessage(errResp)
+
+}
+
+func (c *Connection) Ping() bool {
 
 	ping := message.Msg{
 		Type:    message.HEARTBEAT,
@@ -104,14 +117,14 @@ func (c *Connection) ping() bool {
 	return true
 }
 
-func (c *Connection) reconnect() error {
+func (c *Connection) Reconnect() error {
 	if c.localAddr == "" {
 		return errors.New("address can not be empty")
 	}
 
 	(*c.conn).Close()
 
-	fmt.Println("reconnecting to center......")
+	log.Println("reconnecting to center......")
 
 	conn, err := net.Dial("tcp", c.localAddr)
 
@@ -129,7 +142,7 @@ func (c *Connection) reconnect() error {
 
 	c.reader = reader
 
-	fmt.Println("reconnected to center")
+	log.Println("reconnected to center")
 
 	return nil
 

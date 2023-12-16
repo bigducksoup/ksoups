@@ -30,3 +30,24 @@ type FileReadResponse struct {
 	Content string `json:"content"`
 	Size    int64  `json:"size"`
 }
+
+type FileModify struct {
+	Path    string   `json:"path"`
+	Changes []Change `json:"changes"`
+}
+
+type Change struct {
+	Count     int `json:"count"`
+	Operation int `json:"operation"`
+}
+
+const (
+	ADDED   int = 1
+	REMOVED int = 0
+	REMAIN  int = 2
+)
+
+type FileModifyResponse struct {
+	Path string `json:"path"`
+	OK   bool   `json:"ok"`
+}
