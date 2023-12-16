@@ -2,18 +2,18 @@ package server
 
 import (
 	"bufio"
-	"config-manager/core/message"
+	"config-manager/common/message"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
+	"log"
 	"net"
 	"time"
 )
 
-func init() {
+func Start() {
 
-	fmt.Println("center server initializing")
+	log.Println("center server initializing")
 
 	//tcp 监听
 	listener, err := net.Listen("tcp", ":9999")
@@ -42,7 +42,7 @@ func handleConn(conn *net.Conn) {
 	//创建探针
 	probe := CreateProbe(conn)
 
-	fmt.Printf("handling connection, addr:%s, id:%s \n", probe.Addr, probe.Id)
+	log.Printf("handling connection, addr:%s, id:%s \n", probe.Addr, probe.Id)
 
 	//添加探针
 	Ctx.AddProbe(probe.Id, &probe)
@@ -64,13 +64,13 @@ func handleConn(conn *net.Conn) {
 
 		err = json.Unmarshal(decode, &response)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			continue
 		}
 
 		err = handleMessage(response)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			continue
 		}
 

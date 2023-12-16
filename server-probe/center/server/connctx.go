@@ -1,11 +1,11 @@
 package server
 
 import (
-	"config-manager/core/message"
-	"config-manager/core/utils"
+	"config-manager/common/message"
+	"config-manager/common/utils"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -68,7 +68,7 @@ func (c *Context) AddProbe(id string, probe *Probe) {
 	c.Probes.Store(id, probe)
 	addr := (*probe).Addr
 	c.AddrProbe.Store(addr, probe)
-	fmt.Printf("added probe id = " + id + "\n")
+	log.Printf("added probe id = " + id + "\n")
 }
 
 func (c *Context) RemoveProbe(id string) {
@@ -80,7 +80,7 @@ func (c *Context) RemoveProbe(id string) {
 
 	probe := value.(*Probe)
 
-	fmt.Printf("removing probe: %s", probe.Addr)
+	log.Printf("removing probe: %s", probe.Addr)
 	c.Probes.Delete(probe.Id)
 	c.AddrProbe.Delete(probe.Addr)
 
@@ -199,7 +199,7 @@ func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataTyp
 }
 
 func init() {
-	fmt.Println("server ctx initializing")
+	log.Println("server ctx initializing")
 	Ctx = Context{
 		Probes:      sync.Map{},
 		respChanMap: sync.Map{},

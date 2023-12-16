@@ -1,9 +1,12 @@
 package api
 
 import (
+	"config-manager/center/apiserver/params"
+	"config-manager/center/apiserver/response"
 	"config-manager/center/server"
-	"config-manager/core/message"
+	"config-manager/common/message"
 	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,19 +16,13 @@ func FileRead(c *gin.Context) {
 	address, addrOk := c.GetQuery("address")
 
 	if !addrOk || !pathOk {
-		c.JSON(200, gin.H{
-			"code":    400,
-			"message": "参数错误",
-		})
+		c.JSON(200, response.ParamsError())
 		return
 	}
 
 	probe, err := server.Ctx.GetProbeByAddr(address)
 	if err != nil {
-		c.JSON(200, gin.H{
-			"code":    500,
-			"message": "addr不存在",
-		})
+		c.JSON(200, response.StringFail(err.Error()))
 		return
 	}
 
@@ -36,10 +33,7 @@ func FileRead(c *gin.Context) {
 	bytes, err := server.Ctx.SendMsgExpectRes(probe.Id, read, message.READFILE)
 
 	if err != nil {
-		c.JSON(200, gin.H{
-			"code":    500,
-			"message": err.Error(),
-		})
+		c.JSON(200, response.Fail(err))
 		return
 	}
 
@@ -47,10 +41,44 @@ func FileRead(c *gin.Context) {
 
 	err = json.Unmarshal(bytes, &resp)
 
-	c.JSON(200, gin.H{
-		"code":    200,
-		"message": "success",
-		"data":    resp,
-	})
+	c.JSON(200, response.Success[message.FileReadResponse](resp))
+
+}
+
+func FileModify(c *gin.Context) {
+
+	param := params.ModifyFileParams{}
+
+	err := c.ShouldBindJSON(&param)
+
+	if err != nil {
+		c.JSON(200, response.Fail(err))
+	}
+
+	probe, err := server.Ctx.GetProbeByAddr(param.Addr)
+
+	if err != nil {
+		c.JSON(200, response.Fail(err))
+	}
+
+	fileMReq := message.FileModify{
+		Path:    param.Path,
+		Changes: []message.Change{},
+	}
+
+	for _, v := range param.Changes {
+		fileMReq.Changes = append(fileMReq.Changes, message.Change{
+			Count:     v.Count,
+			Operation: v.Operation,
+		})
+	}
+
+	bytes, err := server.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFYFILE)
+
+	resp := message.FileModifyResponse{}
+
+	json.Unmarshal(bytes, &resp)
+
+	c.JSON(200, response.Success[message.FileModifyResponse](resp))
 
 }

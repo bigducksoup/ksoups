@@ -1,9 +1,11 @@
 package api
 
 import (
+	"config-manager/center/apiserver/response"
 	"config-manager/center/server"
-	"config-manager/core/message"
+	"config-manager/common/message"
 	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,10 +16,7 @@ func DirRead(ctx *gin.Context) {
 	addr, aok := ctx.GetQuery("address")
 
 	if !aok || !pok {
-		ctx.JSON(200, gin.H{
-			"code":    400,
-			"message": "参数错误",
-		})
+		ctx.JSON(200, response.ParamsError())
 		return
 	}
 
@@ -30,38 +29,25 @@ func DirRead(ctx *gin.Context) {
 
 	probe, err := server.Ctx.GetProbeByAddr(addr)
 	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code":    500,
-			"message": "addr不存在",
-		})
+		ctx.JSON(200, response.Fail(err))
 		return
 	}
 
 	bytes, err := server.Ctx.SendMsgExpectRes(probe.Id, read, message.READDIR)
 
 	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code":    500,
-			"message": err,
-		})
+		ctx.JSON(200, response.Fail(err))
 		return
 	}
 
-	response := message.DirResponse{}
+	resp := message.DirResponse{}
 
-	err = json.Unmarshal(bytes, &response)
+	err = json.Unmarshal(bytes, &resp)
 	if err != nil {
-		ctx.JSON(200, gin.H{
-			"code":    500,
-			"message": err,
-		})
+		ctx.JSON(200, response.Fail(err))
 		return
 	}
 
-	ctx.JSON(200, gin.H{
-		"code":    200,
-		"message": "success",
-		"data":    response,
-	})
+	ctx.JSON(200, response.Success[message.DirResponse](resp))
 
 }

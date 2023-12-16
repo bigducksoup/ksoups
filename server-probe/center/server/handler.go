@@ -1,8 +1,8 @@
 package server
 
 import (
-	"config-manager/core/message"
-	"fmt"
+	"config-manager/common/message"
+	"log"
 	"time"
 )
 
@@ -15,8 +15,8 @@ func HandleRESPONSE(msg message.Msg) {
 	err := Ctx.ReceiveResp(msg.Id, msg)
 
 	if err != nil {
-		fmt.Println("receive response failed")
-		fmt.Println(err)
+		log.Println("receive response failed")
+		log.Println(err)
 	}
 
 }
@@ -28,7 +28,7 @@ func HandleHEARTBEAT(msg message.Msg) {
 	value, ok := Ctx.AddrProbe.Load(addr)
 
 	if !ok {
-		fmt.Println("no such connection")
+		log.Println("no such connection")
 		return
 	}
 

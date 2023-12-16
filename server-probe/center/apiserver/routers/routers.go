@@ -8,19 +8,26 @@ import (
 
 func SetUpRouters(engine *gin.Engine) {
 
-	fileGroup := engine.Group("/file")
-	{
-		fileGroup.GET("/read", api.FileRead)
-	}
+	engine.StaticFile("/", "./static/dist/index.html")
+	engine.StaticFile("/favicon.ico", "./static/dist/favicon.ico")
+	engine.Static("/assets", "./static/dist/assets")
 
-	dirGroup := engine.Group("/dir")
+	apiGroup := engine.Group("/api")
 	{
-		dirGroup.GET("/read", api.DirRead)
-	}
+		fileGroup := apiGroup.Group("/file")
+		{
+			fileGroup.GET("/read", api.FileRead)
+			fileGroup.POST("/modify", api.FileModify)
+		}
 
-	infoGroup := engine.Group("/info")
-	{
-		infoGroup.GET("/nodes", api.OnlineNode)
-	}
+		dirGroup := apiGroup.Group("/dir")
+		{
+			dirGroup.GET("/read", api.DirRead)
+		}
 
+		infoGroup := apiGroup.Group("/info")
+		{
+			infoGroup.GET("/nodes", api.OnlineNode)
+		}
+	}
 }
