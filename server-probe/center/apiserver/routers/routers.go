@@ -2,15 +2,34 @@ package routers
 
 import (
 	"config-manager/center/apiserver/api"
+	"config-manager/center/static"
+	"io/fs"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetUpRouters(engine *gin.Engine) {
 
-	engine.StaticFile("/", "./static/dist/index.html")
-	engine.StaticFile("/favicon.ico", "./static/dist/favicon.ico")
-	engine.Static("/assets", "./static/dist/assets")
+	// var DistFS embed.FS
+	statics := http.FS(static.DistFS)
+
+	asset, err := fs.Sub(static.DistFS, "dist/assets")
+
+	if err != nil {
+		panic(err)
+	}
+
+	assets := http.FS(asset)
+
+	engine.StaticFileFS("/", "dist/", statics)
+	engine.StaticFileFS("/favicon.ico", "dist/favicon.ico", statics)
+	engine.StaticFileFS("/logo.svg", "dist/logo.svg", statics)
+	engine.StaticFS("/assets", assets)
+
+	// engine.StaticFile("/", "static/dist/index.html")
+	// engine.StaticFile("/favicon.ico", "static/dist/favicon.ico")
+	// engine.Static("/assets", "static/dist/assets")
 
 	apiGroup := engine.Group("/api")
 	{

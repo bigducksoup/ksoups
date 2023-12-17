@@ -69,5 +69,24 @@ func handleReadFile(data []byte) ([]byte, error) {
 }
 
 func handleModifyFile(data []byte) ([]byte, error) {
-	return nil, nil
+
+	mf, err := readData[message.FileModify](data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := fileservice.FileModify(mf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := json.Marshal(result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
 }

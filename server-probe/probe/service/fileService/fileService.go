@@ -7,6 +7,7 @@ import (
 	"os"
 )
 
+// DirRead reads dir info by accepting a path
 func DirRead(dr message.DirRead) (message.DirResponse, error) {
 
 	dir, err := os.ReadDir(dr.Path)
@@ -45,6 +46,7 @@ func DirRead(dr message.DirRead) (message.DirResponse, error) {
 
 }
 
+// FileRead reads file content
 func FileRead(fr message.FileRead) (message.FileReadResponse, error) {
 
 	path := fr.Path
@@ -63,6 +65,60 @@ func FileRead(fr message.FileRead) (message.FileReadResponse, error) {
 
 	return response, nil
 
+}
+
+func FileModify(fm message.FileModify) (message.FileModifyResponse, error) {
+
+	file, err := GetFile(fm.Path)
+
+	result := message.FileModifyResponse{}
+
+	if err != nil {
+		return result, err
+	}
+
+	lineIndex := 0
+
+	for _, change := range fm.Changes {
+
+		if change.Operation == message.ADDED {
+			err = file.InsertLines(lineIndex, change.Value)
+			if err != nil {
+				break
+			}
+			lineIndex += change.Count
+			continue
+		}
+
+		if change.Operation == message.REMOVED {
+			err = file.RemoveLines(lineIndex, lineIndex+change.Count)
+			if err != nil {
+				break
+			}
+			continue
+		}
+
+		if change.Operation == message.REMAIN {
+			lineIndex += change.Count
+		}
+
+		log.Println(file.Content)
+
+	}
+
+	if err != nil {
+
+		log.Println(err)
+		log.Println("----------------")
+		log.Println(file.Content)
+		result.OK = false
+		return result, err
+	}
+
+	log.Println(file.Content)
+
+	result.OK = true
+	return result, nil
 }
 
 var fileCache = common.NewLRUCache[*common.File](10)

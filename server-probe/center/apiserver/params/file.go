@@ -13,6 +13,7 @@ type ModifyFileParams struct {
 }
 
 type Change struct {
-	Count     int `json:"count"`
-	Operation int `json:"operation"`
+	Count     int      `json:"count"`
+	Operation int      `json:"operation"`
+	Value     []string `json:"value"`
 }

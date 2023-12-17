@@ -41,6 +41,11 @@ func FileRead(c *gin.Context) {
 
 	err = json.Unmarshal(bytes, &resp)
 
+	if err != nil {
+		c.JSON(200, response.Fail(err))
+		return
+	}
+
 	c.JSON(200, response.Success[message.FileReadResponse](resp))
 
 }
@@ -59,6 +64,7 @@ func FileModify(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
+		return
 	}
 
 	fileMReq := message.FileModify{
@@ -70,10 +76,16 @@ func FileModify(c *gin.Context) {
 		fileMReq.Changes = append(fileMReq.Changes, message.Change{
 			Count:     v.Count,
 			Operation: v.Operation,
+			Value:     v.Value,
 		})
 	}
 
 	bytes, err := server.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFYFILE)
+
+	if err != nil {
+		c.JSON(200, response.Fail(err))
+		return
+	}
 
 	resp := message.FileModifyResponse{}
 
