@@ -16,7 +16,7 @@ mkdir -p build
 
 # 遍历目标架构，进行交叉编译
 for arch in "${TARGET_ARCH[@]}"; do
-    output_name="hello_${arch}"
+    output_name="center_${TARGET_OS}_${arch}"
 
     if [ "$arch" == "arm" ]; then
         output_name+="v6"
@@ -27,9 +27,32 @@ for arch in "${TARGET_ARCH[@]}"; do
     fi
 
     # 执行交叉编译
-    GOOS="$TARGET_OS" GOARCH="$arch" 
-    go build -o "build/$output_name" center/main.go
-    go build -o "build/$output_name" probe/main.go
+    GOOS="$TARGET_OS" GOARCH="$arch" go build -o "build/$output_name" center/main.go
+
+    if [ $? -eq 0 ]; then
+        echo "Successfully built for $TARGET_OS/$arch"
+    else
+        echo "Failed to build for $TARGET_OS/$arch"
+    fi
+done
+
+
+
+
+# 遍历目标架构，进行交叉编译
+for arch in "${TARGET_ARCH[@]}"; do
+    output_name="probe_${TARGET_OS}_${arch}"
+
+    if [ "$arch" == "arm" ]; then
+        output_name+="v6"
+    fi
+
+    if [ "$arch" == "arm64" ]; then
+        output_name+="v8"
+    fi
+
+    # 执行交叉编译
+    GOOS="$TARGET_OS" GOARCH="$arch" go build -o "build/$output_name" probe/main.go
 
     if [ $? -eq 0 ]; then
         echo "Successfully built for $TARGET_OS/$arch"

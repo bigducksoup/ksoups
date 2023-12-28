@@ -1,32 +1,32 @@
 package test
 
 import (
-	"config-manager/common/message"
-	fileservice "config-manager/probe/service/fileService"
+	"config-manager/common/message/data"
+	fileservice "config-manager/probe/service/fs"
 	"reflect"
 	"testing"
 )
 
 func TestFileModify(t *testing.T) {
 	type args struct {
-		fm message.FileModify
+		fm data.FileModify
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    message.FileModifyResponse
+		want    data.FileModifyResponse
 		wantErr bool
 	}{
 		// TODO: Add test cases.
 		{
 			name: "FileModify",
 			args: args{
-				fm: message.FileModify{
+				fm: data.FileModify{
 					Path:    "/Users/meichuankutou/Public/testrewrite.txt",
-					Changes: []message.Change{},
+					Changes: []data.Change{},
 				},
 			},
-			want:    message.FileModifyResponse{},
+			want:    data.FileModifyResponse{},
 			wantErr: false,
 		},
 	}

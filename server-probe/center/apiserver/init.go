@@ -4,6 +4,7 @@ import (
 	"config-manager/center/apiserver/middleware"
 	"config-manager/center/apiserver/routers"
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -13,29 +14,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitApiServer() {
+func InitApiServer(port string) {
 
-	e := gin.Default()
+	e := gin.New()
+	e.Use(gin.Recovery())
 
 	e.Use(middleware.LogMiddleWare())
+	//设置跨域中间件
 	e.Use(middleware.Cors())
 
+	//设置路由
 	routers.SetUpRouters(e)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: e,
 	}
 
 	go func() {
 		// 服务连接
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Println("gin listening port", port)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("listen: %s\n", err)
 		}
 	}()
 
 	// 等待中断信号以优雅地关闭服务器（设置 5 秒的超时时间）
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	log.Println("Shutdown Server ...")

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"config-manager/common/message"
 	"config-manager/common/utils"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,7 +17,7 @@ type Connection struct {
 	conn      *net.Conn
 	addr      string
 	time      time.Time
-	localAddr string
+	LocalAddr string
 	reader    *bufio.Reader
 }
 
@@ -31,9 +32,11 @@ func CreateConnection(addr string) Connection {
 		conn:      &conn,
 		addr:      conn.RemoteAddr().String(),
 		time:      time.Now(),
-		localAddr: conn.LocalAddr().String(),
+		LocalAddr: conn.LocalAddr().String(),
 		reader:    bufio.NewReader(conn),
 	}
+
+	log.Println("connected to center : " + addr)
 
 	return connection
 }
@@ -59,6 +62,32 @@ func (c *Connection) Receive() (message.Msg, error) {
 	}
 
 	return msg, nil
+
+}
+
+func (c *Connection) ReceiveWithCtx(ctx context.Context) (message.Msg, error) {
+
+	msgChan := make(chan message.Msg)
+	errChan := make(chan error)
+
+	go func() {
+		msg, err := c.Receive()
+
+		if err != nil {
+			errChan <- err
+			return
+		}
+		msgChan <- msg
+	}()
+
+	select {
+	case err := <-errChan:
+		return message.Msg{}, err
+	case msg := <-msgChan:
+		return msg, nil
+	case <-ctx.Done():
+		return message.Msg{}, ctx.Err()
+	}
 
 }
 
@@ -98,10 +127,12 @@ func (c *Connection) RespErr(id string, err error) {
 
 func (c *Connection) Ping() bool {
 
+	log.Println("ping center")
+
 	ping := message.Msg{
 		Type:    message.HEARTBEAT,
 		Id:      utils.UUID(),
-		Data:    []byte(c.localAddr),
+		Data:    []byte(c.LocalAddr),
 		ErrMark: false,
 	}
 
@@ -111,14 +142,15 @@ func (c *Connection) Ping() bool {
 	}
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return false
 	}
 
 	return true
 }
 
 func (c *Connection) Reconnect() error {
-	if c.localAddr == "" {
+	if c.addr == "" {
 		return errors.New("address can not be empty")
 	}
 
@@ -126,7 +158,7 @@ func (c *Connection) Reconnect() error {
 
 	log.Println("reconnecting to center......")
 
-	conn, err := net.Dial("tcp", c.localAddr)
+	conn, err := net.Dial("tcp", c.addr)
 
 	if err != nil {
 		return err
@@ -135,7 +167,7 @@ func (c *Connection) Reconnect() error {
 	c.conn = &conn
 
 	c.addr = conn.RemoteAddr().String()
-	c.localAddr = conn.LocalAddr().String()
+	c.LocalAddr = conn.LocalAddr().String()
 	c.time = time.Now()
 
 	reader := bufio.NewReader(conn)
@@ -145,5 +177,11 @@ func (c *Connection) Reconnect() error {
 	log.Println("reconnected to center")
 
 	return nil
+
+}
+
+func (c *Connection) Close() {
+
+	(*(c.conn)).Close()
 
 }

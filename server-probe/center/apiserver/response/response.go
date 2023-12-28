@@ -40,3 +40,13 @@ var paramErrResp = Resp[any]{
 func ParamsError() Resp[any] {
 	return paramErrResp
 }
+
+var InvalidReqResp = Resp[any]{
+	Code: 403,
+	Msg:  "非法请求",
+	Data: nil,
+}
+
+func InvalidReqError() Resp[any] {
+	return InvalidReqResp
+}

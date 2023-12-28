@@ -32,11 +32,14 @@ func SetUpRouters(engine *gin.Engine) {
 	// engine.Static("/assets", "static/dist/assets")
 
 	apiGroup := engine.Group("/api")
+	// use auth middleware
+	//apiGroup.Use(middleware.AuthMiddleWare())
 	{
 		fileGroup := apiGroup.Group("/file")
 		{
 			fileGroup.GET("/read", api.FileRead)
 			fileGroup.POST("/modify", api.FileModify)
+			fileGroup.POST("/create", api.FileCreate)
 		}
 
 		dirGroup := apiGroup.Group("/dir")
@@ -48,5 +51,12 @@ func SetUpRouters(engine *gin.Engine) {
 		{
 			infoGroup.GET("/nodes", api.OnlineNode)
 		}
+
+		authGroup := apiGroup.Group("/auth")
+		{
+			authGroup.POST("/login", api.Login)
+			authGroup.POST("/check_login", api.CheckLogin)
+		}
+
 	}
 }

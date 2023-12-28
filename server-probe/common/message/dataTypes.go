@@ -1,0 +1,28 @@
+package message
+
+type DataType string
+
+const (
+	DEFAULT DataType = "DEFAULT"
+	ERROR   DataType = "ERROR"
+)
+
+const (
+	READDIR     DataType = "DIRREAD"
+	READDIRRESP DataType = "DIRREADRESP"
+)
+
+const (
+	READFILE       DataType = "READFILE"
+	READFILERESP   DataType = "READFILERESP"
+	MODIFYFILE     DataType = "FILEMODIFY"
+	MODIFYFILERESP DataType = "FILEMODIFYRESP"
+	CREATEFILE     DataType = "CREATEFILE"
+	DELETEFILE     DataType = "DELETEFILE"
+)
+
+const (
+	CREATE_ONELINE_SHORTCUT DataType = "CREATE_ONELINE_SHORTCUT"
+	CREATE_SCRIPT_SHORTCUT  DataType = "CREATE_SCRIPT_SHORTCUT"
+	DELETE_SHORTCUT         DataType = "DELETE_SHORTCUT"
+)

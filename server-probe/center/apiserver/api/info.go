@@ -1,25 +1,16 @@
 package api
 
 import (
-	"config-manager/center/server"
+	"config-manager/center/global"
+	"config-manager/common/model/node"
 
 	"github.com/gin-gonic/gin"
 )
 
 func OnlineNode(c *gin.Context) {
 
-	nodeAddr := [](map[string]any){}
-
-	server.Ctx.AddrProbe.Range(func(key, value any) bool {
-
-		nodeAddr = append(nodeAddr, map[string]any{
-			"addr": key,
-			"id":   value.(*server.Probe).Id,
-			"time": value.(*server.Probe).Time,
-		})
-		return true
-	})
-
-	c.JSON(200, nodeAddr)
+	var nodes []node.Node
+	global.DB.Find(&nodes)
+	c.JSON(200, nodes)
 
 }

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"config-manager/probe/config"
 	"config-manager/probe/connect"
-	fileservice "config-manager/probe/service/fileService"
+	fileservice "config-manager/probe/service/fs"
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -11,13 +13,22 @@ import (
 
 func main() {
 
-	ctx, cancle := context.WithCancel(context.Background())
+	path := flag.String("c", "./probe/conf.yaml", "config file path")
+	flag.Parse()
 
-	defer cancle()
+	//解析配置文件
+	err := config.LoadConf(*path)
+	if err != nil {
+		panic(err)
+	}
 
-	go connect.InitConnect("127.0.0.1:9999", ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	quit := make(chan os.Signal)
+	defer cancel()
+
+	go connect.InitConnect(config.Conf.CenterAddr, ctx)
+
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 

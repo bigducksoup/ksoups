@@ -91,19 +91,7 @@ const (
 	REQUEST   Type = 1
 	RESPONSE  Type = 2
 	HEARTBEAT Type = 3
-)
-
-type DataType string
-
-const (
-	READDIR        DataType = "DIRREAD"
-	READDIRRESP    DataType = "DIRREADRESP"
-	DEFAULT        DataType = "DEFAULT"
-	READFILE       DataType = "READFILE"
-	READFILERESP   DataType = "READFILERESP"
-	MODIFYFILE     DataType = "FILEMODIFY"
-	MODIFYFILERESP DataType = "FILEMODIFYRESP"
-	ERROR          DataType = "ERROR"
+	REGISTER  Type = 4
 )
 
 type Msg struct {

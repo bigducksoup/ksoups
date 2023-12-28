@@ -1,0 +1,7 @@
+api:
+  port: 8080
+  account: admin
+  password: 123456
+
+center:
+  port: 8081

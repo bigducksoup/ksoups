@@ -4,6 +4,7 @@ import (
 	"config-manager/center/apiserver/response"
 	"config-manager/center/server"
 	"config-manager/common/message"
+	"config-manager/common/message/data"
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ func DirRead(ctx *gin.Context) {
 
 	path, pok := ctx.GetQuery("path")
 
-	addr, aok := ctx.GetQuery("address")
+	probeId, aok := ctx.GetQuery("probeId")
 
 	if !aok || !pok {
 		ctx.JSON(200, response.ParamsError())
@@ -22,12 +23,12 @@ func DirRead(ctx *gin.Context) {
 
 	fileOnly := ctx.DefaultQuery("fileOnly", "false")
 
-	read := message.DirRead{
+	read := data.DirRead{
 		Path:     path,
 		FileOnly: fileOnly == "true",
 	}
 
-	probe, err := server.Ctx.GetProbeByAddr(addr)
+	probe, err := server.Ctx.GetProbe(probeId)
 	if err != nil {
 		ctx.JSON(200, response.Fail(err))
 		return
@@ -40,7 +41,7 @@ func DirRead(ctx *gin.Context) {
 		return
 	}
 
-	resp := message.DirResponse{}
+	resp := data.DirResponse{}
 
 	err = json.Unmarshal(bytes, &resp)
 	if err != nil {
@@ -48,6 +49,6 @@ func DirRead(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(200, response.Success[message.DirResponse](resp))
+	ctx.JSON(200, response.Success[data.DirResponse](resp))
 
 }

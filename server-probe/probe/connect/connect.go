@@ -1,12 +1,16 @@
 package connect
 
 import (
+	"config-manager/common/message"
+	"config-manager/common/utils"
 	"config-manager/probe/common"
+	"config-manager/probe/config"
 	"config-manager/probe/handlers"
 	"context"
 	"errors"
 	"io"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -14,10 +18,20 @@ func InitConnect(addr string, ctx context.Context) {
 
 	//create a connection
 	connection := common.CreateConnection(addr)
-	//goroutine for heartbeat
-	go heartBeat(&connection, ctx)
 
-	for true {
+	//注册到 center
+	err := register(&connection)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	notifyChan := make(chan any, 1)
+
+	//goroutine for heartbeat
+	go heartBeat(&connection, ctx, &notifyChan)
+
+	for {
 		select {
 		case <-ctx.Done():
 			log.Println("stop accept message")
@@ -27,10 +41,20 @@ func InitConnect(addr string, ctx context.Context) {
 		default:
 			msg, err := connection.Receive()
 			if err == io.EOF {
-				return
+				log.Println("connection lost")
+				notify := <-notifyChan
+
+				if notify == 1 {
+					continue
+				}
+
+				if notify == 0 {
+					log.Fatal(errors.New("connection lost,reconnect failed after 10 times retry"))
+				}
 			}
 			if err != nil {
 				log.Println(err)
+				continue
 			}
 			go handlers.HandleMessage(msg, &connection)
 		}
@@ -41,24 +65,35 @@ func InitConnect(addr string, ctx context.Context) {
 
 // do heart beat
 // if beat did not receive response, try to reconnect
-func heartBeat(connection *common.Connection, ctx context.Context) {
+func heartBeat(connection *common.Connection, ctx context.Context, notifyChan *chan any) {
 
 	//create a ticker
 	ticker := time.NewTicker(3 * time.Second)
 
 	//define a func for reconnecting
 	tryReconnect := func(n int) {
+
 		for i := 0; i < n; i++ {
+			time.Sleep(5 * time.Second)
 			err := connection.Reconnect()
-			if err == nil {
-				break
+			if err != nil {
+				continue
 			}
+			err = register(connection)
+			if err != nil {
+				continue
+			}
+
+			*notifyChan <- 1
+			return
+
 		}
-		log.Fatal(errors.New("could not reconnect to center"))
+		*notifyChan <- 0
+		log.Println("reconnected to center failed")
 	}
 
 	//tick
-	for true {
+	for {
 		select {
 		case <-ctx.Done():
 			ticker.Stop()
@@ -73,5 +108,43 @@ func heartBeat(connection *common.Connection, ctx context.Context) {
 			tryReconnect(10)
 		}
 	}
+
+}
+
+func register(connection *common.Connection) error {
+
+	if config.Conf.Name == "" {
+		config.Conf.Name = strings.Split(connection.LocalAddr, ":")[0]
+	}
+
+	msg := message.Msg{
+		Id:       utils.UUID(),
+		Type:     message.REGISTER,
+		Data:     []byte(config.Conf.Name),
+		DataType: message.DEFAULT,
+		ErrMark:  false,
+	}
+
+	err := connection.SendMessage(msg)
+
+	if err != nil {
+		return err
+	}
+
+	//超时控制
+	ctx, cancelFunc := context.WithTimeout(context.TODO(), 20*time.Second)
+
+	defer cancelFunc()
+	resp, err := connection.ReceiveWithCtx(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	if resp.Id == msg.Id && resp.ErrMark == false {
+		return nil
+	}
+
+	return errors.New(string(resp.Data))
 
 }

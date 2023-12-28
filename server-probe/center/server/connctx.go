@@ -19,11 +19,11 @@ type Probe struct {
 	LastPingTime time.Time
 }
 
-func CreateProbe(conn *net.Conn) (p Probe) {
+func CreateProbe(conn *net.Conn, id string) (p Probe) {
 
 	p = Probe{
 		Conn:         conn,
-		Id:           utils.UUID(),
+		Id:           id,
 		Addr:         (*conn).RemoteAddr().String(),
 		Time:         time.Now(),
 		LastPingTime: time.Now(),

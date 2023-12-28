@@ -2,19 +2,29 @@ package main
 
 import (
 	"config-manager/center/apiserver"
+	"config-manager/center/config"
+	"config-manager/center/db"
 	"config-manager/center/server"
 	"flag"
-	"fmt"
 )
 
 func main() {
 
-	//解析配置文件
-	conf := flag.String("c", "config.yaml", "config file")
+	path := flag.String("c", "./center/conf.yaml", "config file path")
 	flag.Parse()
-	fmt.Println(*conf)
 
-	server.Start()
-	apiserver.InitApiServer()
+	//解析配置文件
+	err := config.LoadConf(*path)
+	if err != nil {
+		panic(err)
+	}
+
+	hp := config.Conf.Api.Port
+	sp := config.Conf.Center.Port
+
+	db.InitDB()
+
+	server.Start(sp)
+	apiserver.InitApiServer(hp)
 
 }

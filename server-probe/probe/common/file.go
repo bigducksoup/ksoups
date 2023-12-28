@@ -9,27 +9,29 @@ import (
 )
 
 var validFileSuffix = map[string]bool{
-	".txt":  true,
-	".md":   true,
-	".go":   true,
-	".js":   true,
-	".java": true,
-	".cpp":  true,
-	".php":  true,
-	".py":   true,
-	".sh":   true,
-	".c":    true,
-	".h":    true,
-	".conf": true,
-	".json": true,
-	".xml":  true,
-	".yml":  true,
-	".yaml": true,
-	".csv":  true,
-	".ini":  true,
-	".toml": true,
-	".sql":  true,
-	".SQL":  true,
+	".txt":    true,
+	".md":     true,
+	".go":     true,
+	".js":     true,
+	".java":   true,
+	".cpp":    true,
+	".php":    true,
+	".py":     true,
+	".sh":     true,
+	".c":      true,
+	".h":      true,
+	".config": true,
+	".json":   true,
+	".xml":    true,
+	".yml":    true,
+	".yaml":   true,
+	".csv":    true,
+	".ini":    true,
+	".toml":   true,
+	".sql":    true,
+	".SQL":    true,
+	".conf":   true,
+	".CONF":   true,
 }
 
 func checkFilePathValid(path string) (os.FileInfo, bool) {
@@ -49,7 +51,7 @@ func checkFilePathValid(path string) (os.FileInfo, bool) {
 	}
 
 	if !strings.Contains(path, ".log") {
-		//get file extention name
+		//get file extension name
 		ext := strings.ToLower(filepath.Ext(path))
 
 		if condition, ok := validFileSuffix[ext]; !ok || !condition {
