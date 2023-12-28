@@ -7,11 +7,21 @@ const routes = [
         component: () => import("../pages/index.vue"),    
         children: [
             {
-                path: ":addr",
-                name: "console",
-                component: () => import("../pages/console.vue"),
+                path: "/file/:probeId",
+                name: "board",
+                component: () => import("../pages/index/board.vue"),
+                // component: () => import("../pages/console.vue")
+            },
+            {
+                path: "/trigger/:probeId",
+                name: "trigger",
+                component: () => import('../pages/index/trigger.vue')
             }
-        ]  
+        ],
+    },
+    {
+        path:"/login",
+        component: () => import("../pages/login.vue"),
     }
 
 ]
