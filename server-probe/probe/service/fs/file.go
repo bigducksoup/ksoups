@@ -3,7 +3,6 @@ package fileservice
 import (
 	"config-manager/common/message/data"
 	"config-manager/probe/common"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -98,8 +97,6 @@ func FileCreate(fc data.FileCreate) (data.FileCreateResponse, error) {
 	}
 
 	mode := os.FileMode(perm)
-
-	fmt.Println(mode)
 
 	file, err := os.OpenFile(fc.Path, os.O_CREATE, mode)
 

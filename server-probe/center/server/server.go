@@ -3,8 +3,8 @@ package server
 import (
 	"bufio"
 	"config-manager/center/global"
+	"config-manager/center/model"
 	"config-manager/common/message"
-	"config-manager/common/model/node"
 	"encoding/json"
 	"errors"
 	"io"
@@ -33,7 +33,7 @@ func Start(port string) {
 				continue
 			}
 			go handleConn(&conn)
-			go scanDeadProbe()
+			//go scanDeadProbe()
 
 		}
 	}()
@@ -132,7 +132,7 @@ func scanDeadProbe() {
 
 func offLineNode(probe *Probe) {
 	Ctx.RemoveProbe(probe.Id)
-	global.DB.Model(&node.Node{}).Where("id = ?", probe.Id).Update("online", false)
+	global.DB.Model(&model.ProbeInfo{}).Where("id = ?", probe.Id).Update("online", false)
 }
 
 // 将probe注册到ctx
@@ -192,10 +192,10 @@ func handleRegister(conn *net.Conn, serverCtx *Context, timeout time.Duration) (
 		//添加探针
 		serverCtx.AddProbe(probe.Id, &probe)
 		var ct int64
-		global.DB.Model(&node.Node{}).Where("id = ?", probeId).Count(&ct)
+		global.DB.Model(&model.ProbeInfo{}).Where("id = ?", probeId).Count(&ct)
 
 		if ct == 0 {
-			n := node.Node{
+			n := model.ProbeInfo{
 				Id:      probeId,
 				Name:    probeId,
 				Address: probe.Addr,
@@ -205,7 +205,7 @@ func handleRegister(conn *net.Conn, serverCtx *Context, timeout time.Duration) (
 
 			global.DB.Create(&n)
 		} else {
-			global.DB.Model(&node.Node{}).Where("id = ?", probeId).Updates(map[string]any{
+			global.DB.Model(&model.ProbeInfo{}).Where("id = ?", probeId).Updates(map[string]any{
 				"address": probe.Addr,
 				"online":  1,
 			})

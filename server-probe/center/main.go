@@ -1,10 +1,12 @@
 package main
 
 import (
-	"config-manager/center/apiserver"
 	"config-manager/center/config"
 	"config-manager/center/db"
+	"config-manager/center/global"
 	"config-manager/center/server"
+	"config-manager/center/service"
+	"config-manager/center/webapi"
 	"flag"
 )
 
@@ -14,17 +16,18 @@ func main() {
 	flag.Parse()
 
 	//解析配置文件
-	err := config.LoadConf(*path)
+	conf, err := config.LoadConf(*path)
 	if err != nil {
 		panic(err)
 	}
-
-	hp := config.Conf.Api.Port
-	sp := config.Conf.Center.Port
+	global.Conf = *conf
+	hp := global.Conf.WebApi.Port
+	sp := global.Conf.Center.Port
 
 	db.InitDB()
+	service.Init()
 
 	server.Start(sp)
-	apiserver.InitApiServer(hp)
+	webapi.InitApiServer(hp)
 
 }

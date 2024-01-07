@@ -1,26 +1,42 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {createRouter, createWebHistory} from "vue-router";
 
 const routes = [
-
     {
         path: "/",
-        component: () => import("../pages/index.vue"),    
+        component: () => import("../pages/main.vue"),
+        meta: {
+            transition: 'none'
+        },
+    },
+    {
+        path: '/chain',
+        component: () => import('../pages/chain.vue'),
+        meta: {
+            transition: 'none'
+        }
+    },
+    {
+        path: "/node",
+        component: () => import("../pages/node.vue"),
+        meta: {
+            transition: 'none'
+        },
         children: [
             {
-                path: "/file/:probeId",
+                path: "file/:probeId",
                 name: "board",
-                component: () => import("../pages/index/board.vue"),
+                component: () => import("../pages/node/file.vue"),
                 // component: () => import("../pages/console.vue")
             },
             {
-                path: "/trigger/:probeId",
-                name: "trigger",
-                component: () => import('../pages/index/trigger.vue')
+                path: "shortcut/:probeId",
+                name: "shortcut",
+                component: () => import('../pages/node/shortcut.vue')
             }
         ],
     },
     {
-        path:"/login",
+        path: "/login",
         component: () => import("../pages/login.vue"),
     }
 
@@ -31,7 +47,6 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 })
-
 
 
 export default router

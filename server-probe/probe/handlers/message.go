@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func HandleMessage(msg message.Msg, connection *(common.Connection)) {
+func HandleMessage(msg message.Msg, connection *common.Connection) {
 
 	policy, ok := msgHandlePolicy[msg.Type]
 
@@ -20,7 +20,7 @@ func HandleMessage(msg message.Msg, connection *(common.Connection)) {
 
 }
 
-var msgHandlePolicy map[message.Type]func(msg message.Msg, connection *common.Connection) = map[message.Type]func(msg message.Msg, connection *common.Connection){
+var msgHandlePolicy = map[message.Type]func(msg message.Msg, connection *common.Connection){
 	message.REQUEST: handleReq,
 }
 

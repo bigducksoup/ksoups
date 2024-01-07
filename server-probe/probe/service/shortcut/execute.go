@@ -1,12 +1,9 @@
 package shortcut
 
 import (
-	. "config-manager/common/model/shortcut"
-	. "config-manager/common/shortcut"
+	"config-manager/common/message/data"
 	"context"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -57,64 +54,15 @@ func executeCmdIgnoreResult(cmd string, timeout time.Duration) error {
 	return nil
 }
 
-func ExecuteOneLineShortcut(shortcut OneLineShortcut) ExecResult {
+func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 
 	//执行结果
-	execResult := shortcut.ExecResult{}
-	//仅运行
-	if shortcut.JustRun {
-		err := executeCmdIgnoreResult(shortcut.Command, shortcut.Timeout)
-
-		if err != nil {
-			execResult.Ok = false
-			execResult.Err = err.Error()
-			return execResult
-		}
-
-	} else {
-		result, err := executeCmdWithTimeout(shortcut.Command, shortcut.Timeout)
-
-		if err != nil {
-			execResult.Ok = false
-			execResult.Err = err.Error()
-			return execResult
-		}
-		execResult.Out = result
-	}
-
-	return execResult
-
-}
-
-func ExecuteScriptShortcut(shortcut ScriptShortcut) ExecResult {
-
-	path := shortcut.Path
-
-	result := shortcut.ExecResult{}
-
-	info, err := os.Stat(path)
-
-	if os.IsNotExist(err) {
-		result.Ok = false
-		result.Err = err.Error()
-		return result
-	}
-
-	if filepath.Ext(info.Name()) != ".sh" {
-		result.Ok = false
-		result.Err = "unacceptable file extension name"
-		return result
-	}
-
-	cmd := "sh " + path
-	//执行结果
-	execResult := shortcut.ExecResult{
+	execResult := data.ShortcutRunResp{
 		Ok: true,
 	}
-
 	//仅运行
 	if shortcut.JustRun {
-		err := executeCmdIgnoreResult(cmd, shortcut.Timeout)
+		err := executeCmdIgnoreResult(shortcut.Payload, shortcut.Timeout)
 
 		if err != nil {
 			execResult.Ok = false
@@ -123,7 +71,7 @@ func ExecuteScriptShortcut(shortcut ScriptShortcut) ExecResult {
 		}
 
 	} else {
-		result, err := executeCmdWithTimeout(cmd, shortcut.Timeout)
+		result, err := executeCmdWithTimeout(shortcut.Payload, shortcut.Timeout)
 
 		if err != nil {
 			execResult.Ok = false

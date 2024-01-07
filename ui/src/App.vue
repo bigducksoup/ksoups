@@ -1,5 +1,5 @@
 <script setup>
-import {NMessageProvider,NConfigProvider} from 'naive-ui'
+import {NMessageProvider,NConfigProvider,NNotificationProvider} from 'naive-ui'
 import { onMounted } from 'vue';
 import { baseUrl }  from './state'
 import { darkTheme } from 'naive-ui'
@@ -19,7 +19,6 @@ onMounted(()=>{
                 return
         }
 
-        console.log(sid)
 
 
         fetch(baseUrl.value + 'api/auth/check_login', {
@@ -33,7 +32,9 @@ onMounted(()=>{
         }).then(json=>{
                 if(json.code !== 200){
                         router.push('/login')
+                  return
                 }
+                router.push('/')
         })
 
 
@@ -49,10 +50,17 @@ onMounted(()=>{
 
 <template>
         <n-message-provider>
-                <n-config-provider :theme="darkTheme" class="w-full h-full">
-                        <router-view>
-                        </router-view>
-                </n-config-provider>
+          <n-notification-provider>
+            <n-config-provider :theme="darkTheme" class="w-full h-full">
+                <router-view v-slot="{ Component,route }">
+
+                  <Transition :name="route.meta.transition" >
+                    <component  :is="Component"/>
+                  </Transition>
+
+                </router-view>
+            </n-config-provider>
+          </n-notification-provider>
         </n-message-provider>
 </template>
 

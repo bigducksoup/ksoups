@@ -1,4 +1,3 @@
-// socket_stick/proto/proto.go
 package message
 
 import (

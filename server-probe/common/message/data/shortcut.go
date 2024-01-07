@@ -2,46 +2,22 @@ package data
 
 import "time"
 
-type OneLineShortcutCreate struct {
-	Name        string
-	Command     string
-	Timeout     time.Duration
-	JustRun     bool
-	Description string
+type ShortcutRun struct {
+	Type int `json:"type"`
+	//超时时间
+	Timeout time.Duration `json:"timeout"`
+	//仅运行，不处理结果
+	JustRun bool   `json:"justRun"`
+	Payload string `json:"payload"`
 }
 
-type OneLineShortcutCreateResp struct {
-	Ok         bool
-	Error      string
-	ShortcutId string
-	CreateTime time.Time
-}
-
-type ScriptShortcutCreate struct {
-	Name        string
-	Path        string
-	Timeout     time.Duration
-	JustRun     bool
-	Description string
-}
-
-type ScriptShortcutCreateResp struct {
-	Ok         bool
-	Error      string
-	ShortcutId string
-	CreateTime time.Time
+type ShortcutRunResp struct {
+	Ok  bool
+	Err string
+	Out string
 }
 
 const (
-	ONE_LINE_SHORTCUT = 1
-	SCRIPT_SHORTCUT   = 2
+	ONE_LINE = iota
+	SCRIPT
 )
-
-type ShortcutDelete struct {
-	Type int    `json:"type"`
-	Id   string `json:"id"`
-}
-
-type ShortcutDeleteResp struct {
-	OK bool `json:"ok"`
-}

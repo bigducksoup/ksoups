@@ -1,4 +1,4 @@
-/* ./src/index.css */
+/* ./src/node.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,4 +24,57 @@ body, html {
     overflow: hidden;
     /* background-image: url('./assets/texture.png'); */
 }
+
+@keyframes bounce-in {
+    0% {
+        transform:scale(1)  translate(-50%,-50%);
+        transform-origin: left top;
+        position: absolute;
+        left: 50%;
+        top: 150%;
+    }
+    50% {
+        transform:scale(1.01)  translate(-50%,-50%);
+        transform-origin: left top;
+        position: absolute;
+        left: 50%;
+        top: 49%;
+    }
+    100% {
+        transform: scale(1) translate(-50%,-50%);
+        position: absolute;
+        transform-origin: left top;
+        left: 50%;
+        top: 50%;
+    }
+}
+
+
+.bounce-enter-active {
+    animation: bounce-in 0.5s;
+}
+.bounce-leave-active {
+    animation: bounce-in 0.5s reverse;
+}
+
+
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.fade-enter-active {
+    animation: fade-in 0.5s;
+}
+
+.fade-leave-active {
+    animation: fade-in 0.5s reverse;
+}
+
+
 

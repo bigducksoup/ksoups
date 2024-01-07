@@ -5,34 +5,17 @@ import (
 	"os"
 )
 
-type Config struct {
-	Api    `yaml:"api"`
-	Center `yaml:"center"`
-}
-
-type Api struct {
-	Port     string `yaml:"port"`
-	Account  string `yaml:"account"`
-	Password string `yaml:"password"`
-}
-
-type Center struct {
-	Port string `yaml:"port"`
-}
-
-var Conf Config = Config{}
-
-func LoadConf(path string) error {
-
+func LoadConf(path string) (*Config, error) {
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = yaml.Unmarshal(file, &Conf)
+	conf := Config{}
+
+	err = yaml.Unmarshal(file, &conf)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return nil
+	return &conf, nil
 }

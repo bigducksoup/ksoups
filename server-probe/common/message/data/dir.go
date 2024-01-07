@@ -28,11 +28,11 @@ type DirItem struct {
 
 type DirCreate struct {
 	Path       string `json:"path"`
-	Permission uint32 `json:"permission"`
+	Permission string `json:"permission"`
 }
 
 type DirCreateResponse struct {
 	Ok         bool   `json:"ok"`
 	Path       string `json:"path"`
-	Permission uint32 `json:"permission"`
+	Permission string `json:"permission"`
 }

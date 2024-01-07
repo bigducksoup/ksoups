@@ -76,7 +76,31 @@ const modifyFile = async (ProbeId,path,diffRes) => {
 }
 
 
+const createFile = async (probeId,path,permission) => {
+
+    let sid =  window.localStorage.getItem('sid')
+
+    let res = await fetch(baseUrl.value + "api/file/create",{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "sid": sid
+        },
+        body: JSON.stringify({
+            "path": path,
+            "probeId": probeId,
+            "permission": permission
+        })
+    })
+
+    let json  = await res.json()
+
+    return json
+
+}
+
 export{
     getFileContent,
-    modifyFile
+    modifyFile,
+    createFile
 }

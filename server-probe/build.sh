@@ -4,6 +4,9 @@
 ORIGINAL_GOOS="$GOOS"
 ORIGINAL_GOARCH="$GOARCH"
 
+ORIGINAL_CC="$CC"
+ORIGINAL_CXX="$CXX"
+
 # 定义目标平台和架构
 TARGET_OS="linux"
 TARGET_ARCH=("amd64")
@@ -27,8 +30,9 @@ for arch in "${TARGET_ARCH[@]}"; do
     fi
 
     # 执行交叉编译
-    GOOS="$TARGET_OS" GOARCH="$arch" go build -o "build/$output_name" center/main.go
+    GOOS="$TARGET_OS" GOARCH="$arch" CC="x86_64-linux-musl-gcc" CXX="x86_64-linux-musl-g++"  CGO_ENABLED=1 go build -ldflags "-linkmode external -extldflags -static"  -o "build/$output_name" center/main.go
 
+    echo "$CC"
     if [ $? -eq 0 ]; then
         echo "Successfully built for $TARGET_OS/$arch"
     else
@@ -52,7 +56,7 @@ for arch in "${TARGET_ARCH[@]}"; do
     fi
 
     # 执行交叉编译
-    GOOS="$TARGET_OS" GOARCH="$arch" go build -o "build/$output_name" probe/main.go
+    GOOS="$TARGET_OS" GOARCH="$arch"  CC="x86_64-linux-musl-gcc" CXX="x86_64-linux-musl-g++" CGO_ENABLED=1 go build -ldflags "-linkmode external -extldflags -static"  -o "build/$output_name" probe/main.go
 
     if [ $? -eq 0 ]; then
         echo "Successfully built for $TARGET_OS/$arch"

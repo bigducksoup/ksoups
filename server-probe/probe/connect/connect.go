@@ -26,10 +26,10 @@ func InitConnect(addr string, ctx context.Context) {
 		log.Fatal(err)
 	}
 
-	notifyChan := make(chan any, 1)
+	//notifyChan := make(chan any, 1)
 
 	//goroutine for heartbeat
-	go heartBeat(&connection, ctx, &notifyChan)
+	//go heartBeat(&connection, ctx, &notifyChan)
 
 	for {
 		select {
@@ -41,16 +41,36 @@ func InitConnect(addr string, ctx context.Context) {
 		default:
 			msg, err := connection.Receive()
 			if err == io.EOF {
+				flag := false
 				log.Println("connection lost")
-				notify := <-notifyChan
-
-				if notify == 1 {
-					continue
+				for i := 0; i < 100; i++ {
+					time.Sleep(5 * time.Second)
+					log.Printf("trying reconnected to center,%d time", i)
+					err := connection.Reconnect()
+					if err != nil {
+						continue
+					}
+					err = register(&connection)
+					if err != nil {
+						continue
+					}
+					flag = true
+					break
 				}
 
-				if notify == 0 {
-					log.Fatal(errors.New("connection lost,reconnect failed after 10 times retry"))
+				if !flag {
+					panic(errors.New("failed to reconnected to center after 100 times retry"))
 				}
+				continue
+				//notify := <-notifyChan
+				//
+				//if notify == 1 {
+				//	continue
+				//}
+				//
+				//if notify == 0 {
+				//	log.Fatal(errors.New("connection lost,reconnect failed after 10 times retry"))
+				//}
 			}
 			if err != nil {
 				log.Println(err)

@@ -13,6 +13,10 @@ import (
 
 func main() {
 
+	log.SetFlags(log.Lshortfile)
+	log.SetPrefix("[center]")
+	log.SetFlags(log.Lshortfile | log.Lmicroseconds | log.Ldate)
+
 	path := flag.String("c", "./probe/conf.yaml", "config file path")
 	flag.Parse()
 

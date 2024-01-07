@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"syscall"
 )
 
@@ -106,7 +107,8 @@ func DirRead(dr data.DirRead) (data.DirResponse, error) {
 
 func DirCreate(dc data.DirCreate) (data.DirCreateResponse, error) {
 
-	err := os.Mkdir(dc.Path, os.FileMode(dc.Permission))
+	perm, err := strconv.ParseInt(dc.Permission, 8, 0)
+	err = os.MkdirAll(dc.Path, os.FileMode(perm))
 
 	if err != nil {
 		return data.DirCreateResponse{}, err

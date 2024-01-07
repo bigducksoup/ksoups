@@ -3,7 +3,7 @@ package test
 import (
 	"config-manager/center/db"
 	"config-manager/center/global"
-	"config-manager/common/model/node"
+	"config-manager/center/model"
 	"config-manager/common/utils"
 	"fmt"
 	"testing"
@@ -16,9 +16,9 @@ func TestDB(t *testing.T) {
 
 	probeId := "Intel_Xeon"
 
-	n := node.Node{}
+	n := model.ProbeInfo{}
 
-	global.DB.Create(&node.Node{
+	global.DB.Create(&model.ProbeInfo{
 		Id:      utils.UUID(),
 		Name:    probeId,
 		Address: "123",

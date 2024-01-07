@@ -10,6 +10,7 @@ const (
 const (
 	READDIR     DataType = "DIRREAD"
 	READDIRRESP DataType = "DIRREADRESP"
+	CREATE_DIR  DataType = "CREATE_DIR"
 )
 
 const (
@@ -22,7 +23,5 @@ const (
 )
 
 const (
-	CREATE_ONELINE_SHORTCUT DataType = "CREATE_ONELINE_SHORTCUT"
-	CREATE_SCRIPT_SHORTCUT  DataType = "CREATE_SCRIPT_SHORTCUT"
-	DELETE_SHORTCUT         DataType = "DELETE_SHORTCUT"
+	RUN_SHORTCUT DataType = "RUN_SHORTCUT"
 )
