@@ -4,6 +4,7 @@ import (
 	"config-manager/center/global"
 	"config-manager/center/model"
 	"config-manager/common/utils"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -15,13 +16,15 @@ type UserInfo struct {
 }
 
 func InitDB() {
-	db, err := gorm.Open(sqlite.Open("database.db"), &gorm.Config{
+
+	db, err := gorm.Open(sqlite.Open("database.sqlite"), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic(err)
 	}
 
+	// 自动生成表
 	err = db.AutoMigrate(
 		&UserInfo{},
 		&model.Shortcut{},
@@ -38,12 +41,16 @@ func InitDB() {
 		panic(err)
 	}
 
+	// 初始化数据，设置全部探针为offline状态
 	db.Model(&model.ProbeInfo{}).Where("online = ?", true).Update("online", false)
 
+	// 初始化账号密码
 	db.Create(&UserInfo{
 		Id:       utils.UUID(),
 		Account:  global.Conf.Account,
 		Password: utils.Md5([]byte(global.Conf.Password)),
 	})
+
+	// 初始化全局变量
 	global.DB = db
 }

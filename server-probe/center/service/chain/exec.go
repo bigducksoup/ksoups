@@ -3,33 +3,115 @@ package chain
 import (
 	"config-manager/center/action"
 	"config-manager/center/model"
+	"config-manager/center/vo"
 	"config-manager/common/utils"
 	"errors"
+	"gorm.io/gorm"
+	"sync"
 	"time"
 )
 
 type ExecService struct {
 	ChainCRUD *CRUDService
+	Log       *LogService
+	// key: dispatchId value: *dispatcher
+	dispatcherMap sync.Map
 }
 
 // Exec 执行链
-// 1. 从数据库中获取所有的节点、边、快捷方式、绑定关系
-// 2. 创建调度器参数
-// 3. 创建调度器
-// 4. 创建调度日志
-// 5. 执行调度器
-// 6. 创建节点执行日志
 func (e *ExecService) Exec(chainId string) (dispatchId string, error error) {
 
-	// 1. 从数据库中获取所有的节点、边、快捷方式、绑定关系
-	nodes, err := e.ChainCRUD.GetNodesByChainId(chainId)
+	dispatcher, err := e.NewDispatcher(chainId)
+
 	if err != nil {
 		return "", err
 	}
 
+	go e.DoDispatch(dispatcher)
+
+	dispatchId = dispatcher.Id
+	error = nil
+	return
+}
+
+func (e *ExecService) GetDispatcherFromMap(dispatchId string) (dispatcher *action.Dispatcher, ok bool) {
+	dp, ok := e.dispatcherMap.Load(dispatchId)
+	if ok {
+		dispatcher = dp.(*action.Dispatcher)
+	}
+	return
+}
+
+// NewDispatch 单步调度前的准备
+func (e *ExecService) NewDispatch(chainId string) (*action.Dispatcher, error) {
+	dispatcher, err := e.NewDispatcher(chainId)
+	if err == nil {
+		_, err = e.Log.LoadElseNewDispatchLog(dispatcher)
+	}
+	return dispatcher, err
+}
+
+func (e *ExecService) DoSingleStepDispatch(dispatchId string) error {
+
+	dispatcher, ok := e.dispatcherMap.Load(dispatchId)
+
+	if !ok {
+		return errors.New("no such dispatcher or dispatcher has been done")
+	}
+
+	d := dispatcher.(*action.Dispatcher)
+
+	curNodeId, ok := d.CurNodeId()
+
+	err := d.Next()
+
+	if errors.Is(err, action.ErrNoMoreNode) {
+		// 更新调度日志
+		e.Log.UpdateExecStatus(dispatchId, model.DispatchStatusDone)
+		e.dispatcherMap.Delete(dispatchId)
+		return nil
+	}
+
+	if errors.Is(err, action.ErrAbort) {
+		// 更新调度日志
+		e.Log.UpdateExecStatus(dispatchId, model.DispatchStatusAborted)
+		e.dispatcherMap.Delete(dispatchId)
+		return nil
+	}
+
+	if ok {
+		nodeExecLog := model.NodeExecLog{
+			Id:         utils.UUID(),
+			DispatchId: d.Id,
+			Ok:         d.Ok,
+			Out:        d.Out,
+			NodeId:     *curNodeId,
+			CreateTime: time.Now(),
+		}
+		e.Log.Db.Create(&nodeExecLog)
+	}
+
+	if d.Status == action.Done {
+		// 更新调度日志
+		e.Log.UpdateExecStatus(dispatchId, model.DispatchStatusDone)
+		e.dispatcherMap.Delete(dispatchId)
+		return nil
+	}
+
+	return nil
+
+}
+
+func (e *ExecService) NewDispatcher(chainId string) (dispatcher *action.Dispatcher, err error) {
+	// 1. 从数据库中获取所有的节点、边、快捷方式、绑定关系
+	nodes, err := e.ChainCRUD.GetNodesByChainId(chainId)
+	if err != nil {
+		return nil, err
+	}
+
 	edges, err := e.ChainCRUD.GetEdgesByChainId(chainId)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var nodeIds []string
@@ -53,86 +135,136 @@ func (e *ExecService) Exec(chainId string) (dispatchId string, error error) {
 		Nodes:     nodes,
 		Edges:     edges,
 		Bindings:  bindings,
+		ChainId:   chainId,
 	}
 
 	// 3. 创建调度器
-	dispatcher, err := action.NewDispatcher(params)
+	dispatcher, err = action.NewDispatcher(params)
 
-	if err != nil {
-		return "", err
+	if err == nil {
+		e.dispatcherMap.Store(dispatcher.Id, dispatcher)
 	}
 
-	go func() {
-		// 4. 创建调度日志
-		dispatchLog := model.DispatchLog{
-			Id:         dispatcher.Id,
-			ChainId:    chainId,
-			Status:     model.DispatchStatusRunning,
-			Done:       false,
-			CreateTime: time.Now(),
+	return
+}
+
+// DoDispatch 执行调度
+// 接收一个调度器，执行调度器的Next方法，直到调度器没有下一个节点
+func (e *ExecService) DoDispatch(dispatcher *action.Dispatcher) error {
+
+	dispatchLog, err := e.Log.LoadElseNewDispatchLog(dispatcher)
+
+	if err != nil {
+		return err
+	}
+
+	for {
+
+		curNodeId, ok := dispatcher.CurNodeId()
+
+		err := dispatcher.Next()
+		if errors.Is(err, action.ErrNoMoreNode) {
+			// 更新调度日志
+			e.Log.UpdateExecStatus(dispatchLog.Id, model.DispatchStatusDone)
+			e.dispatcherMap.Delete(dispatcher.Id)
+			break
 		}
-		e.ChainCRUD.Db.Create(&dispatchLog)
 
-		// 5. 执行调度器
-		for {
-
-			curNodeId, ok := dispatcher.GetCurNodeId()
-
-			err := dispatcher.Next()
-			if errors.Is(err, action.ErrNoMoreNode) {
-
-				// 更新调度日志
-				e.ChainCRUD.Db.Model(&dispatchLog).Where("id = ? ", dispatchLog.Id).Updates(model.DispatchLog{
-					Status: model.DispatchStatusDone,
-					Done:   true,
-				})
-
-				break
-			}
-
-			// 6. 创建节点执行日志
+		if errors.Is(err, action.ErrAbort) {
+			// 更新调度日志
+			e.Log.UpdateExecStatus(dispatchLog.Id, model.DispatchStatusAborted)
+			e.dispatcherMap.Delete(dispatcher.Id)
+			break
+		}
+		if ok {
 			nodeExecLog := model.NodeExecLog{
 				Id:         utils.UUID(),
 				DispatchId: dispatcher.Id,
 				Ok:         dispatcher.Ok,
 				Out:        dispatcher.Out,
+				NodeId:     *curNodeId,
+				CreateTime: time.Now(),
 			}
-
-			if ok {
-				nodeExecLog.NodeId = *curNodeId
-			}
-
-			e.ChainCRUD.Db.Create(&nodeExecLog)
+			e.Log.Db.Create(&nodeExecLog)
 		}
-	}()
+	}
 
-	dispatchId = dispatcher.Id
-	error = nil
-	return
-}
+	return nil
 
-type DispatchStatus struct {
-	DispatchLog model.DispatchLog              `json:"dispatchLog"`
-	NodeExecLog map[string][]model.NodeExecLog `json:"nodeExecLog"`
 }
 
 // GetDispatchStatus 获取调度情况
-func (e *ExecService) GetDispatchStatus(dispatchId string) (d DispatchStatus, err error) {
+func (e *ExecService) GetDispatchStatus(dispatchId string) (d *vo.DispatchStatus, err error) {
 
-	err = e.ChainCRUD.Db.Where("id = ?", dispatchId).First(&d.DispatchLog).Error
+	d = &vo.DispatchStatus{}
+
+	dispatchLog, err := e.Log.GetDispatchLog(dispatchId)
 
 	if err != nil {
+		return nil, err
+	}
+	d.DispatchLog = dispatchLog
+
+	nodeExecDetails, err := e.Log.GetNodeExecDetail(dispatchId)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return
 	}
 
-	var nodeExecLogs []model.NodeExecLog
-	err = e.ChainCRUD.Db.Where("dispatch_id = ?", dispatchId).Find(&nodeExecLogs).Error
+	d.PreNodes = nodeExecDetails
 
-	if err != nil {
-		return
+	dp, ok := e.dispatcherMap.Load(dispatchId)
+
+	if !ok {
+		d.CurNode = nil
+		d.SuccessThen = nil
+		d.FailThen = nil
+		return d, nil
+	}
+	dispatcher := dp.(*action.Dispatcher)
+
+	shortcut, err := e.ChainCRUD.GetShortcutByNodeId(dispatcher.CurNode.Id)
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
 	}
 
-	nodeExecLogMap, err := utils.SliceGroupBy[string, model.NodeExecLog](nodeExecLogs, "NodeId")
-	d.NodeExecLog = nodeExecLogMap
+	d.CurNode = &vo.NodeDetail{
+		Node:     dispatcher.CurNode,
+		Shortcut: shortcut,
+	}
+
+	successThenNode, ok := dispatcher.SuccessThenNode()
+
+	if ok {
+
+		shortcut, err := e.ChainCRUD.GetShortcutByNodeId(successThenNode.Id)
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+
+		d.SuccessThen = &vo.NodeDetail{
+			Node:     successThenNode,
+			Shortcut: shortcut,
+		}
+
+	}
+
+	failThenNode, ok := dispatcher.FailedThenNode()
+
+	if ok {
+
+		shortcut, err := e.ChainCRUD.GetShortcutByNodeId(failThenNode.Id)
+
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+
+		d.FailThen = &vo.NodeDetail{
+			Node:     failThenNode,
+			Shortcut: shortcut,
+		}
+
+	}
 	return
 }

@@ -15,6 +15,7 @@ var (
 var (
 	ChainCRUD chain.CRUDService
 	ChainEXEC chain.ExecService
+	ChainLOG  chain.LogService
 )
 
 func Init() {
@@ -23,9 +24,10 @@ func Init() {
 		Runner: scrun.Runner{},
 		Db:     global.DB,
 	}
-
+	ChainLOG = chain.LogService{Db: global.DB}
 	ChainCRUD = chain.CRUDService{Db: global.DB}
 	ChainEXEC = chain.ExecService{
 		ChainCRUD: &ChainCRUD,
+		Log:       &ChainLOG,
 	}
 }

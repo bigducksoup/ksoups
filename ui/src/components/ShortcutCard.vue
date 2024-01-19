@@ -1,6 +1,7 @@
 <script setup>
 import {NIcon,NPopconfirm} from 'naive-ui'
 import {EllipsisVertical,Play} from '@vicons/ionicons5'
+import {ref} from "vue";
 const props = defineProps({
   'title':{
     type: String,
@@ -13,24 +14,16 @@ const props = defineProps({
 })
 const emits = defineEmits(['onClickPlay','onClickMore'])
 
-const randomColor = ()=>{
-  const colors = [
-    '#00B5F7',
-    '#4B69C6',
-    '#F3656A',
-    '#00CEAE',
-    '#EDC51D'
-  ]
+const root = ref(null)
 
-  let randomIndex = Math.floor(Math.random() * 5);
-  console.log(colors[randomIndex])
-  return colors[randomIndex]
-}
+defineExpose({
+  root
+})
 
 </script>
 
 <template>
-  <div class="shadow-sm rounded-sm overflow-hidden flex flex-col border-[#303438] border-[1px] hover:border-blue-500">
+  <div ref="root" class="shadow-sm rounded-sm overflow-hidden flex flex-col border-[#303438] border-[1px] hover:border-blue-500">
     <div class="pl-2 pt-2 mb-2 overflow-ellipsis text-xl text-white w-full truncate">{{props.title}}</div>
     <code class="grow pl-2 text-xs text-blue-500 overflow-scroll">
       {{props.content}}

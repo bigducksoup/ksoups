@@ -19,8 +19,6 @@ onMounted(()=>{
                 return
         }
 
-
-
         fetch(baseUrl.value + 'api/auth/check_login', {
                 method: 'POST',
                 headers: {

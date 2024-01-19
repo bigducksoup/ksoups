@@ -2,10 +2,13 @@ package chain
 
 import (
 	"config-manager/center/model"
+	"config-manager/center/vo"
 	"config-manager/common/utils"
 	"errors"
-	"gorm.io/gorm"
+	"log"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type CRUDService struct {
@@ -18,6 +21,22 @@ func (c *CRUDService) SaveChain(ch *model.Chain) error {
 
 func (c *CRUDService) SaveNode(n *model.Node) error {
 	return c.Db.Create(n).Error
+}
+
+func (c *CRUDService) DeleteNode(nodeId string) error {
+
+	tx := c.Db.Begin()
+
+	tx.Delete(&model.Edge{}, "source_id = ? or target_id = ?", nodeId, nodeId)
+	tx.Delete(&model.ShortcutNodeBinding{}, "node_id = ?", nodeId)
+	tx.Delete(&model.Node{}, "id = ?", nodeId)
+
+	err := tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+	}
+
+	return err
 }
 
 type ConnectTwoNodesParams struct {
@@ -49,10 +68,16 @@ func (c *CRUDService) LinkNode(p ConnectTwoNodesParams) error {
 		return errors.New("Node with Id = " + p.SourceId + " and Node with Id = " + p.TargetId + " not in the same chain")
 	}
 
-	//检测相同类型的NODE是否已经存在
-	err := c.Db.First(&model.Edge{}, "source_id = ? and type = ?", p.SourceId, p.Type).Error
+	var cur model.Edge
+
+	//检测相同类型的Edge是否已经存在
+	err := c.Db.First(&cur, "source_id = ? and type = ?", p.SourceId, p.Type).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("Edge with SourceId = " + p.SourceId + " and Type = " + string(rune(p.Type)) + " already exists")
+		// 更新
+		cur.TargetId = p.TargetId
+		cur.ChainId = p.ChainId
+		cur.Type = p.Type
+		return c.Db.Save(&cur).Error
 	}
 
 	edge := model.Edge{
@@ -65,6 +90,11 @@ func (c *CRUDService) LinkNode(p ConnectTwoNodesParams) error {
 	}
 
 	return c.Db.Create(&edge).Error
+}
+
+// UnlinkNode Chain中断开两个节点。
+func (c *CRUDService) UnlinkNode(p ConnectTwoNodesParams) error {
+	return c.Db.Delete(&model.Edge{}, "source_id = ? and target_id = ? and type = ? and chain_id = ?", p.SourceId, p.TargetId, p.Type, p.ChainId).Error
 }
 
 // BindShortcut 绑定快捷方式到节点。
@@ -84,7 +114,8 @@ func (c *CRUDService) BindShortcut(nodeId string, shortcutId string) error {
 
 	err = c.Db.First(&model.ShortcutNodeBinding{}, "node_id = ?", nodeId).Error
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return errors.New("Node with Id = " + nodeId + " already binded")
+		log.Println("Node with Id = " + nodeId + " already binded removing")
+		c.Db.Delete(&model.ShortcutNodeBinding{}, "node_id = ?", nodeId)
 	}
 
 	oneLineToNode := model.ShortcutNodeBinding{
@@ -97,6 +128,12 @@ func (c *CRUDService) BindShortcut(nodeId string, shortcutId string) error {
 		return err
 	}
 	return nil
+}
+
+// UnbindShortcut 解绑快捷方式。
+// UnbindShortcut接受节点ID,shortcutId作为参数，并将该节点与快捷方式的绑定解除。
+func (c *CRUDService) UnbindShortcut(nodeId string, shortcutId string) error {
+	return c.Db.Delete(&model.ShortcutNodeBinding{}, "node_id = ? and shortcut_id = ?", nodeId, shortcutId).Error
 }
 
 // SetRoot 设置节点为根节点。
@@ -125,25 +162,14 @@ func (c *CRUDService) SetRoot(nodeId string) error {
 	return nil
 }
 
-type ChainInfo struct {
-	Chain model.Chain  `json:"chain"`
-	Nodes []NodeVO     `json:"nodes"`
-	Edges []model.Edge `json:"edges"`
-}
-
-type NodeVO struct {
-	model.Node `json:"node"`
-	Shortcut   *model.Shortcut `json:"shortcut"`
-}
-
 // ChainInfo 获取链信息。
 // ChainInfo接受链ID作为参数，并返回一个ChainInfo结构体，该结构体包含链的信息，包括节点和边。
 // 该函数首先获取链，然后获取链中的所有节点和边。
 // 对于每个节点，它还获取与该节点绑定的快捷方式。
 // 最后，它将所有信息组合到一个ChainInfo结构体中，并返回该结构体。
-func (c *CRUDService) ChainInfo(chainId string) (ChainInfo, error) {
+func (c *CRUDService) ChainInfo(chainId string) (vo.ChainInfo, error) {
 
-	chainInfo := ChainInfo{}
+	chainInfo := vo.ChainInfo{}
 
 	//获取chain
 	chain := model.Chain{
@@ -158,31 +184,52 @@ func (c *CRUDService) ChainInfo(chainId string) (ChainInfo, error) {
 	var nodes []model.Node
 	err = c.Db.Find(&nodes, "chain_id = ?", chainId).Error
 
+	if err != nil {
+		return chainInfo, err
+	}
+
 	//获取所有shortcut
-	var nodeVOs []NodeVO
+	var nodeVOs []*vo.NodeVO
 
 	for i := range nodes {
+
+		var nodeVO vo.NodeVO
+		nodeVO.Node = nodes[i]
 		//获取shortcut
 		var shortcut model.Shortcut
-		tx := c.Db.Table("shortcuts").Select("shortcuts.*").Joins("inner join shortcut_node_bindings on shortcuts.id = shortcut_node_bindings.shortcut_id").Where("shortcut_node_bindings.node_id = ?", nodes[i].Id).First(&shortcut)
+		err := c.Db.Table("shortcuts").Select("shortcuts.*").Joins("inner join shortcut_node_bindings on shortcuts.id = shortcut_node_bindings.shortcut_id").Where("shortcut_node_bindings.node_id = ?", nodes[i].Id).First(&shortcut).Error
 
-		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			nodeVOs = append(nodeVOs, NodeVO{
-				Node:     nodes[i],
-				Shortcut: nil,
-			})
-			continue
+		if err == nil {
+			nodeVO.Shortcut = &shortcut
 		}
 
-		nodeVOs = append(nodeVOs, NodeVO{
-			Node:     nodes[i],
-			Shortcut: &shortcut,
-		})
+		//获取successThen
+		var successThen model.Node
+		//SELECT nodes.* from nodes,edges WHERE nodes.id = 'c0fc4aa9-d454-4038-b30a-09d9787e4c89' and nodes.id = edges.source_id and edges.type = 1
+		err = c.Db.Table("nodes").Select("nodes.*").Joins("inner join edges on edges.target_id = nodes.id").Where("edges.source_id = ? and edges.type = ?", nodes[i].Id, model.SUCCESS).First(&successThen).Error
+		if err == nil {
+			nodeVO.SuccessThenId = &successThen.Id
+			nodeVO.SuccessThenName = &successThen.Name
+		}
+
+		//获取failThen
+		var failThen model.Node
+		err = c.Db.Table("nodes").Select("nodes.*").Joins("inner join edges on edges.target_id = nodes.id").Where("edges.source_id = ? and edges.type = ?", nodes[i].Id, model.FAILED).First(&failThen).Error
+
+		if err == nil {
+			nodeVO.FailThenId = &failThen.Id
+			nodeVO.FailThenName = &failThen.Name
+		}
+
+		nodeVOs = append(nodeVOs, &nodeVO)
 	}
 
 	//获取edges
 	var edges []model.Edge
 	err = c.Db.Find(&edges, "chain_id = ?", chainId).Error
+	if err != nil {
+		return chainInfo, err
+	}
 
 	chainInfo.Chain = chain
 	chainInfo.Nodes = nodeVOs
@@ -215,4 +262,18 @@ func (c *CRUDService) GetEdgesByChainId(chainId string) ([]model.Edge, error) {
 	var edges []model.Edge
 	err := c.Db.Find(&edges, "chain_id = ?", chainId).Error
 	return edges, err
+}
+
+func (c *CRUDService) GetShortcutByNodeId(nodeId string) (*model.Shortcut, error) {
+	var shortcut model.Shortcut
+	err := c.Db.Table("shortcuts").
+		Select("shortcuts.*").
+		Joins("inner join shortcut_node_bindings on shortcuts.id = shortcut_node_bindings.shortcut_id").
+		Where("shortcut_node_bindings.node_id = ?", nodeId).First(&shortcut).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	return &shortcut, err
 }

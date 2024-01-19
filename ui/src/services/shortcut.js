@@ -2,9 +2,10 @@ import {baseUrl} from '../state/index.js'
 import {useMessage} from 'naive-ui'
 
 
-const message = useMessage()
+
 
 const listShortcut = async (probeId)=>{
+
     let sid = window.localStorage.getItem('sid')
     let res =  await fetch(baseUrl.value + "api/shortcut/list?probeId=" + probeId , {
         headers: {
@@ -16,6 +17,7 @@ const listShortcut = async (probeId)=>{
 
 
 const runShortcut = async (shortcutId)=>{
+    const message = useMessage()
     let sid = window.localStorage.getItem('sid')
     let res =  await fetch(baseUrl.value + "api/shortcut/run?shortcutId=" + shortcutId , {
         method:"POST",
@@ -33,7 +35,7 @@ const runShortcut = async (shortcutId)=>{
 
 
 const deleteShortcut = async (shortcutId)=>{
-
+    const message = useMessage()
     let sid = window.localStorage.getItem('sid')
     let res =  await fetch(baseUrl.value + "api/shortcut/delete?shortcutId=" + shortcutId , {
         method:"DELETE",
@@ -49,10 +51,25 @@ const deleteShortcut = async (shortcutId)=>{
     return json
 }
 
+//http://127.0.0.1:8080/api/shortcut/group
+const getShortcutGroup = async ()=>{
+    let sid = window.localStorage.getItem('sid')
+    let res =  await fetch(baseUrl.value + "api/shortcut/group" , {
+        headers: {
+            'sid': sid
+        }
+    })
 
+    
+
+    let json = await res.json()
+
+    return json
+}
 
 export {
     listShortcut,
     runShortcut,
-    deleteShortcut
+    deleteShortcut,
+    getShortcutGroup
 }

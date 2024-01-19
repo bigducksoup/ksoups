@@ -1,4 +1,4 @@
-/* ./src/node.css */
+/* ./src/probe.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,6 +74,12 @@ body, html {
 
 .fade-leave-active {
     animation: fade-in 0.5s reverse;
+}
+
+
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 

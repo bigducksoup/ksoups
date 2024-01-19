@@ -1,12 +1,12 @@
 package main
 
 import (
+	"config-manager/center/api"
 	"config-manager/center/config"
 	"config-manager/center/db"
 	"config-manager/center/global"
 	"config-manager/center/server"
 	"config-manager/center/service"
-	"config-manager/center/webapi"
 	"flag"
 )
 
@@ -28,6 +28,6 @@ func main() {
 	service.Init()
 
 	server.Start(sp)
-	webapi.InitApiServer(hp)
+	api.InitApiServer(hp)
 
 }

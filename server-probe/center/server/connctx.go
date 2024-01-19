@@ -190,7 +190,7 @@ func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataTyp
 			return nil, errors.New(string(res.Data))
 		}
 		return res.Data, nil
-	case <-time.After(300 * time.Second):
+	case <-time.After(3000 * time.Second):
 		c.respChanMap.Delete(msg.Id)
 		close(resChan)
 		return []byte{}, errors.New("response time out reqId =" + msg.Id)

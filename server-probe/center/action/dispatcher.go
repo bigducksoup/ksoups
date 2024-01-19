@@ -4,18 +4,32 @@ import (
 	"config-manager/center/model"
 	"config-manager/common/utils"
 	"errors"
+	"time"
+)
+
+type DispatchStatus int8
+
+const (
+	Ready DispatchStatus = iota
+	Abort
+	Done
 )
 
 type Dispatcher struct {
 	Id string
 	*Runner
-	Out       string
-	Ok        bool
-	curNode   *model.Node
-	shortcuts map[string]model.Shortcut
-	nodes     map[string]model.Node
-	edges     []model.Edge
-	bindings  map[string]model.ShortcutNodeBinding
+	// pre node output
+	Out        string
+	Ok         bool
+	Status     DispatchStatus
+	CurNode    *model.Node
+	PreNode    *model.Node
+	ChainId    string
+	CreateTime time.Time
+	shortcuts  map[string]model.Shortcut
+	nodes      map[string]model.Node
+	edges      []model.Edge
+	bindings   map[string]model.ShortcutNodeBinding
 }
 
 type ChainExecParams struct {
@@ -23,69 +37,85 @@ type ChainExecParams struct {
 	Nodes     []model.Node
 	Edges     []model.Edge
 	Bindings  []model.ShortcutNodeBinding
+	ChainId   string
 }
 
 var (
 	ErrNoMoreNode = errors.New("no more node")
+	ErrAbort      = errors.New("abort")
 )
 
 func (d *Dispatcher) Next() error {
 
-	// 如果当前应该执行节点为空，直接返回
-	if d.curNode == nil {
+	if d.Status == Done {
 		return ErrNoMoreNode
 	}
 
-	binding, ok := d.bindings[d.curNode.Id]
-
-	if !ok {
-		d.Ok = false
-		d.Out = "no binding shortcut"
-		return nil
+	if d.Status == Abort {
+		return ErrAbort
 	}
 
-	sc := d.shortcuts[binding.ShortcutId]
+	// 如果当前应该执行节点为空，直接返回
+	if d.CurNode == nil {
+		d.Status = Done
+		return ErrNoMoreNode
+	}
 
-	out, ok := d.Run(sc)
-	d.Ok = ok
-	d.Out = out
+	binding, ok := d.bindings[d.CurNode.Id]
+
+	if !ok {
+		d.Ok = true
+		d.Out = "no binding shortcut"
+	} else {
+		sc := d.shortcuts[binding.ShortcutId]
+		out, ok := d.Run(sc)
+		d.Ok = ok
+		d.Out = out
+	}
+
+	d.PreNode = d.CurNode
 
 	// 如果执行失败，ok == false，找到失败对应的边，跳转到失败的节点
-	if !ok {
+	if !d.Ok {
 		//find fail edge
-		for i := range d.edges {
-			if d.edges[i].SourceId == d.curNode.Id && d.edges[i].Type == model.FAILED {
-				node := d.nodes[d.edges[i].TargetId]
-				d.curNode = &node
+		node, ok := d.FailedThenNode()
 
-				return nil
-			}
+		if ok {
+			d.CurNode = node
+			return nil
 		}
+
 		// 如果没有找到失败对应的边，直接返回
-		d.curNode = nil
+		d.CurNode = nil
+		d.Status = Done
 		return nil
 	}
 
 	// 如果执行成功，ok == true，找到成功对应的边，跳转到成功的节点
-	for i := range d.edges {
-		if d.edges[i].SourceId == d.curNode.Id && d.edges[i].Type == model.SUCCESS {
-			node := d.nodes[d.edges[i].TargetId]
-			d.curNode = &node
-			return nil
-		}
+	node, ok := d.SuccessThenNode()
+
+	if ok {
+		d.CurNode = node
+		return nil
 	}
+
 	// 如果没有找到成功对应的边，直接返回
-	d.curNode = nil
+	d.CurNode = nil
+	d.Status = Done
 	return nil
+}
+
+func (d *Dispatcher) Abort() {
+	d.Status = Abort
 }
 
 func (d *Dispatcher) CurShortcut() (*model.Shortcut, bool) {
 
-	if d.curNode == nil {
+	if d.CurNode == nil {
 		return nil, false
 	}
 
-	binding, ok := d.bindings[d.curNode.Id]
+	binding, ok := d.bindings[d.CurNode.Id]
 
 	if !ok {
 		return nil, false
@@ -95,11 +125,41 @@ func (d *Dispatcher) CurShortcut() (*model.Shortcut, bool) {
 	return &sc, true
 }
 
-func (d *Dispatcher) GetCurNodeId() (*string, bool) {
-	if d.curNode == nil {
+func (d *Dispatcher) CurNodeId() (*string, bool) {
+	if d.CurNode == nil {
 		return nil, false
 	}
-	return &d.curNode.Id, true
+	return &d.CurNode.Id, true
+}
+
+func (d *Dispatcher) SuccessThenNode() (*model.Node, bool) {
+
+	if d.CurNode == nil {
+		return nil, false
+	}
+
+	for i := range d.edges {
+		if d.edges[i].SourceId == d.CurNode.Id && d.edges[i].Type == model.SUCCESS {
+			node := d.nodes[d.edges[i].TargetId]
+			return &node, true
+		}
+	}
+	return nil, false
+}
+
+func (d *Dispatcher) FailedThenNode() (*model.Node, bool) {
+
+	if d.CurNode == nil {
+		return nil, false
+	}
+
+	for i := range d.edges {
+		if d.edges[i].SourceId == d.CurNode.Id && d.edges[i].Type == model.FAILED {
+			node := d.nodes[d.edges[i].TargetId]
+			return &node, true
+		}
+	}
+	return nil, false
 }
 
 func NewDispatcher(p ChainExecParams) (*Dispatcher, error) {
@@ -120,22 +180,29 @@ func NewDispatcher(p ChainExecParams) (*Dispatcher, error) {
 		return nil, err
 	}
 
-	var root model.Node
+	var root *model.Node
 
 	for i := range p.Nodes {
 		if p.Nodes[i].Root {
-			root = p.Nodes[i]
+			root = &p.Nodes[i]
 			break
 		}
 	}
 
+	if root == nil {
+		return nil, errors.New("no root node")
+	}
+
 	return &Dispatcher{
-		Id:        utils.UUID(),
-		Runner:    &Runner{},
-		curNode:   &root,
-		shortcuts: scMap,
-		nodes:     nodeMap,
-		edges:     p.Edges,
-		bindings:  bindingMap,
+		Id:         utils.UUID(),
+		Runner:     &Runner{},
+		CurNode:    root,
+		shortcuts:  scMap,
+		nodes:      nodeMap,
+		edges:      p.Edges,
+		bindings:   bindingMap,
+		ChainId:    p.ChainId,
+		CreateTime: time.Now(),
+		Status:     Ready,
 	}, nil
 }

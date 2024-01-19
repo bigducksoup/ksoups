@@ -2,6 +2,8 @@ package shortcut
 
 import (
 	"config-manager/center/model"
+	"config-manager/common/utils"
+
 	"gorm.io/gorm"
 )
 
@@ -25,6 +27,25 @@ func (c *CRUDService) ListShortcuts(probeId string) ([]model.Shortcut, error) {
 
 	return scs, nil
 
+}
+
+func (c *CRUDService) ShortcutGroup() (map[string][]model.Shortcut, error) {
+
+	var scs []model.Shortcut
+
+	err := c.Db.Find(&scs).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := utils.SliceGroupBy[string, model.Shortcut](scs, "ProbeId")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return groups, nil
 }
 
 func (c *CRUDService) RemoveShortcut(id string) error {
