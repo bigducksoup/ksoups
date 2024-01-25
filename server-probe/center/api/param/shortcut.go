@@ -9,3 +9,9 @@ type CreateShortcutParams struct {
 	JustRun     bool   `json:"justRun"`
 	Payload     string `json:"payload" binding:"required" msg:"Payload 不能为空"`
 }
+
+type CreateScriptParams struct {
+	ProbeId string `json:"probeId" binding:"required" msg:"probeId 不能为空"`
+	Name    string `json:"name" binding:"required" msg:"probeId 不能为空"`
+	Content string `json:"content"`
+}

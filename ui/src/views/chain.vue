@@ -12,6 +12,8 @@ const headerStyle = ref({
   animation: "full-to-normal 0.50s ease-in-out",
 });
 
+const detail = ref(null);
+
 const selectedChain = ref({
   id: "none",
 });
@@ -28,6 +30,9 @@ const chainList = ref([]);
 const chooseChain = (chain) => {
   selectedChain.value = chain;
   router.push("/chain/" + selectedChain.value["id"]);
+  if (detail.value.dispatch){
+    detail.value.dispatch.fatherAnim("animate__slideInUp", "animate__fast")
+  }
 };
 
 const CreateChain = async () => {
@@ -110,7 +115,7 @@ onMounted(() => {
       <div class="w-10/12 h-screen overflow-scroll">
         <RouterView v-slot="{ Component }">
           <keep-alive>
-            <component :key="$route.params.chainId" :is="Component"/>
+            <component ref="detail" :key="$route.params.chainId" :is="Component"/>
           </keep-alive>
         </RouterView>
       </div>

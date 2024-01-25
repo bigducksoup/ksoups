@@ -277,3 +277,21 @@ func (c *CRUDService) GetShortcutByNodeId(nodeId string) (*model.Shortcut, error
 
 	return &shortcut, err
 }
+
+func (c *CRUDService) DeleteChain(ChainId string) error {
+	tx := c.Db.Begin()
+
+	tx.Delete(&model.Edge{}, "chain_id = ?", ChainId)
+	tx.Delete(&model.ShortcutNodeBinding{}, "node_id in (select id from nodes where chain_id = ?)", ChainId)
+	tx.Delete(&model.Chain{}, "id = ?", ChainId)
+	tx.Delete(&model.DispatchLog{}, "chain_id = ?", ChainId)
+	tx.Delete(&model.NodeExecLog{}, "node_id in (select id from nodes where chain_id = ?)", ChainId)
+	tx.Delete(&model.Node{}, "chain_id = ?", ChainId)
+
+	err := tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+	}
+
+	return err
+}

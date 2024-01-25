@@ -39,7 +39,7 @@ const props = defineProps(['item'])
 
 
 
-     <n-popover trigger="hover" style="width: fit-content;max-width: 1400px;height: fit-content;max-height: 700px" scrollable placement="bottom">
+     <n-popover trigger="hover" scrollable placement="bottom">
        <template #trigger>
          <div :class="item.ok ? 'green':'red'">
            <span class="text-white">
@@ -49,7 +49,9 @@ const props = defineProps(['item'])
            {{ item.out }}
          </div>
        </template>
-         <div :class="item.ok ? 'text-green-500':'text-red-500'" v-html="toHtml(item.out)"></div>
+         <div class="max-w-[1000px] h-fit max-h-[600px] whitespace-nowrap overflow-x-scroll">
+           <div :class="item.ok ? 'text-green-500':'text-red-500'" v-html="toHtml(item.out)"></div>
+         </div>
       </n-popover>
 
    </div>

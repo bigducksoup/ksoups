@@ -6,7 +6,7 @@ import {Add, Close} from "@vicons/ionicons5";
 import {NButton, NIcon, NInput, NModal, useMessage} from "naive-ui";
 import {useChainInfo, useNodeOperation} from "../../hooks/chain.js";
 import {useShortcutGroup} from '../../hooks/shortcut.js'
-import NodeManage from "./node-manage.vue";
+import DispatchConsole from "./dispatch-console.vue";
 
 const message = useMessage();
 const route = useRoute();
@@ -17,6 +17,12 @@ const manage = ref(null);
 
 const showNodes = ref(false);
 const showAddNodeModal = ref(false);
+
+const dispatch = ref(null);
+
+defineExpose({
+  dispatch
+})
 
 
 const { chainDetail,nodes,getChainData } = useChainInfo(route.params.chainId)
@@ -56,7 +62,7 @@ const CreateNode = async () => {
     showAddNodeModal.value = false;
     nodeCreateForm.name = "";
     nodeCreateForm.description = "";
-    getChainData()
+    await getChainData()
   }
 };
 
@@ -79,10 +85,11 @@ const showNodeManage = () => {
 <template>
   <div class="p-2 pb-16 bg-black h-screen overflow-hidden relative">
     <div ref="ctl" class="h-screen w-full p-3 z-10">
-      <node-manage
+      <dispatch-console
+          ref="dispatch"
           :show-nodes="showNodeManage"
           :chain-id="route.params.chainId"
-      ></node-manage>
+      ></dispatch-console>
 
     </div>
   </div>

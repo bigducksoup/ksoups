@@ -7,12 +7,14 @@ import (
 	"config-manager/center/model"
 	"config-manager/center/service"
 	"config-manager/common/utils"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
+// ShortcutCreate 创建快捷方式
+// 接收一个CreateShortcutParams结构体作为参数，该结构体包含要创建的快捷方式的信息。
+// 返回一个布尔值，指示是否成功创建快捷方式。
 func ShortcutCreate(c *gin.Context) {
 	p := param.CreateShortcutParams{}
 	err := c.ShouldBindJSON(&p)
@@ -47,9 +49,9 @@ func ShortcutCreate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.Success[bool](true))
-
 }
 
+// ListShortcuts 列出指定探针的所有快捷方式
 func ListShortcuts(c *gin.Context) {
 
 	probeId, b := c.GetQuery("probeId")
@@ -77,6 +79,8 @@ func ListShortcuts(c *gin.Context) {
 
 }
 
+// ShortcutGroup 快捷方式分组汇总
+// key: 探针id value: 快捷方式数组
 func ShortcutGroup(c *gin.Context) {
 
 	groups, err := service.ShortcutCRUD.ShortcutGroup()
@@ -90,6 +94,7 @@ func ShortcutGroup(c *gin.Context) {
 
 }
 
+// RunShortcut 运行快捷方式
 func RunShortcut(c *gin.Context) {
 
 	scId, ok := c.GetQuery("shortcutId")
@@ -114,6 +119,7 @@ func RunShortcut(c *gin.Context) {
 	}))
 }
 
+// DeleteShortcut 删除快捷方式
 func DeleteShortcut(c *gin.Context) {
 
 	id, ok := c.GetQuery("shortcutId")
@@ -131,6 +137,27 @@ func DeleteShortcut(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.SuccessWithNoData())
+}
+
+func UpdateShortcut(c *gin.Context) {
+	var shortcut = model.Shortcut{}
+
+	err := c.ShouldBindJSON(&shortcut)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	err = service.ShortcutCRUD.UpdateShortcut(&shortcut)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessWithNoData())
+
 }
 
 func checkProbeId(probeId string) bool {

@@ -1,4 +1,4 @@
 name: mac-os
-#center-addr: 127.0.0.1:8081
-center-addr: 122.9.160.96:8081
-db-path: /db/db.json
+center-addr: 127.0.0.1:8081
+#center-addr: 122.9.160.96:8081
+script-path: scripts

@@ -38,6 +38,6 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	if !resp.Ok {
 		return resp.Err, false
 	}
-	return resp.Out, true
+	return resp.StdOut, true
 
 }

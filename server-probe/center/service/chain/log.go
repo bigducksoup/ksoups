@@ -69,14 +69,15 @@ func (l *LogService) GetNodeExecLogs(dispatchId string) (nodeExecLogs []*model.N
 // GetNodeExecDetail
 // SQL ：
 //
-//	SELECT
-//	ne.create_time,
-//	ne.ok,
-//	ne.out,
-//	nodes.name as 'node_name',
-//	shortcuts.name as 'shortcut_name',
-//	shortcuts.payload,
-//	shortcuts.type as 'shortcut_type'
+//		SELECT
+//		ne.create_time,
+//		ne.ok,
+//		ne.out,
+//		nodes.name as 'node_name',
+//		shortcuts.name as 'shortcut_name',
+//		shortcuts.payload,
+//		shortcuts.type as 'shortcut_type'
+//	 shortcuts.probe_id as 'probeId'
 //
 // FROM
 //
@@ -95,7 +96,7 @@ func (l *LogService) GetNodeExecLogs(dispatchId string) (nodeExecLogs []*model.N
 func (l *LogService) GetNodeExecDetail(dispatchId string) (nodeExecDetail []*model.NodeExecDetail, err error) {
 
 	err = l.Db.Table("node_exec_logs ne").
-		Select("ne.create_time,ne.ok,ne.out,nodes.name as 'node_name',shortcuts.name as 'shortcut_name',shortcuts.payload,shortcuts.type as 'shortcut_type'").
+		Select("ne.create_time,ne.ok,ne.out,nodes.name as 'node_name',shortcuts.name as 'shortcut_name',shortcuts.payload,shortcuts.type as 'shortcut_type',shortcuts.probe_id as 'probe_id'").
 		Joins("inner join nodes on ne.node_id = nodes.id").
 		Joins("left join shortcut_node_bindings bd on nodes.id = bd.node_id").
 		Joins("left join shortcuts on bd.shortcut_id = shortcuts.id").

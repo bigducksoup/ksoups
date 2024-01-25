@@ -12,9 +12,20 @@ type ShortcutRun struct {
 }
 
 type ShortcutRunResp struct {
-	Ok  bool
-	Err string
-	Out string
+	Ok     bool
+	Err    string
+	StdOut string
+	StdErr string
+}
+
+type CreateScript struct {
+	Name    string `json:"name"`
+	Content string `json:"content"`
+}
+
+type CreateScriptResp struct {
+	Name    string `json:"name"`
+	AbsPath string `json:"absPath"`
 }
 
 const (

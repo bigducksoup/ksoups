@@ -16,7 +16,9 @@ import (
 
 func InitApiServer(port string) {
 
+	gin.SetMode(gin.ReleaseMode)
 	e := gin.New()
+
 	e.Use(gin.Recovery())
 
 	e.Use(middleware.LogMiddleWare())

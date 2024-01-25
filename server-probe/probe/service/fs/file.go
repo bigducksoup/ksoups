@@ -3,6 +3,7 @@ package fileservice
 import (
 	"config-manager/common/message/data"
 	"config-manager/probe/common"
+	"config-manager/probe/function"
 	"log"
 	"os"
 	"strconv"
@@ -98,17 +99,11 @@ func FileCreate(fc data.FileCreate) (data.FileCreateResponse, error) {
 
 	mode := os.FileMode(perm)
 
-	file, err := os.OpenFile(fc.Path, os.O_CREATE, mode)
+	file, err := function.CreateFile(fc.Path, mode)
 
 	if err != nil {
 		return data.FileCreateResponse{}, err
 	}
-
-	err = file.Chmod(mode)
-	if err != nil {
-		return data.FileCreateResponse{}, err
-	}
-
 	defer file.Close()
 
 	return data.FileCreateResponse{

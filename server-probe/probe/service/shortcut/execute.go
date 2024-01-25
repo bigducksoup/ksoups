@@ -1,6 +1,7 @@
 package shortcut
 
 import (
+	"config-manager/center/model"
 	"config-manager/common/message/data"
 	"context"
 	"os/exec"
@@ -24,7 +25,7 @@ func executeCmdWithTimeout(cmd string, timeout time.Duration) (string, error) {
 		if ctx.Err() != nil {
 			return string(bytes), nil
 		}
-		return "", err
+		return string(bytes), err
 	}
 
 	return string(bytes), nil
@@ -56,6 +57,10 @@ func executeCmdIgnoreResult(cmd string, timeout time.Duration) error {
 
 func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 
+	if shortcut.Type == model.SCRIPT {
+		shortcut.Payload = "sh " + shortcut.Payload
+	}
+
 	//执行结果
 	execResult := data.ShortcutRunResp{
 		Ok: true,
@@ -76,9 +81,10 @@ func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 		if err != nil {
 			execResult.Ok = false
 			execResult.Err = err.Error()
+			execResult.StdErr = result
 			return execResult
 		}
-		execResult.Out = result
+		execResult.StdOut = result
 	}
 
 	return execResult

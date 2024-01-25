@@ -71,5 +71,6 @@ type NodeExecDetail struct {
 	NodeName     string    `json:"nodeName"`
 	ShortcutName *string   `json:"shortcutName"`
 	Payload      *string   `json:"payload"`
+	ProbeId      *string   `json:"probeId"`
 	ShortcutType *int      `json:"shortcutType"`
 }

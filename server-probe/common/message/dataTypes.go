@@ -23,5 +23,6 @@ const (
 )
 
 const (
-	RUN_SHORTCUT DataType = "RUN_SHORTCUT"
+	RUN_SHORTCUT  DataType = "RUN_SHORTCUT"
+	CREATE_SCRIPT DataType = "CREATE_SCRIPT"
 )

@@ -4,6 +4,8 @@ logs
 *.local
 
 build
+scripts
+database.sqlite
 
 # Editor directories and files
 .vscode/*

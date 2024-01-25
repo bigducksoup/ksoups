@@ -18,7 +18,7 @@
     <div class="w-full h-16 flex flex-row items-center p-1">
 
       <n-button @click="showCreateForm = true">
-          创建
+        创建
       </n-button>
 
 
@@ -71,19 +71,57 @@
   </n-modal>
 
 
+  <!--  <Transition-->
+  <!--      name="bounce"-->
+  <!--  >-->
+  <!--    <create-form-->
+  <!--        @close="showCreateForm = false"-->
+  <!--        :parent="parent"-->
+  <!--        :probe-id="probeId"-->
+  <!--        v-if="showCreateForm"-->
+  <!--    >-->
+  <!--    </create-form>-->
+  <!--  </Transition>-->
 
-  <Transition
-      name="bounce"
-  >
-    <create-form
-        @close="showCreateForm = false"
-        :parent="parent"
-        :probe-id="probeId"
-        v-if="showCreateForm"
-    >
-    </create-form>
-  </Transition>
 
+  <n-drawer v-model:show="showCreateForm" :width="500">
+    <n-drawer-content :title="'在 '+parent+' 中创建'" :native-scrollbar="false">
+      <n-form :model="createForm" :label-width="160">
+        <n-form-item label="类型">
+          <n-radio-group v-model:value="createForm.type" name="typeChoice">
+            <n-radio-button  value="file">
+              文件
+            </n-radio-button>
+            <n-radio-button value="dir">
+              文件夹
+            </n-radio-button>
+          </n-radio-group>
+        </n-form-item>
+
+        <n-form-item label="名称">
+          <n-input v-model:value="createForm.name" placeholder="名称"></n-input>
+        </n-form-item>
+
+        <n-form-item label="权限">
+          <n-input v-model:value="createForm.permission" placeholder="输入权限（例：777）"></n-input>
+        </n-form-item>
+
+        <n-form-item>
+          <div class="flex w-full flex-row justify-end">
+            <n-button
+                type="primary"
+                class="ml-2 bg-green-500"
+                @click="submitCreateForm"
+            >
+              创建
+            </n-button>
+          </div>
+        </n-form-item>
+
+      </n-form>
+    </n-drawer-content>
+
+  </n-drawer>
 
 </template>
 
@@ -93,19 +131,24 @@ import {
   NButton,
   NButtonGroup,
   NDataTable,
+  NDrawer,
+  NDrawerContent,
   NDropdown,
+  NForm,
+  NFormItem,
   NIcon,
   NInput,
   NModal,
+  NRadioButton,
+  NRadioGroup,
   NScrollbar,
   NTabPane,
   NTabs,
   useMessage,
 } from 'naive-ui'
-import {ChevronDown, DocumentTextOutline, FlashOutline, FolderOutline, Link, Refresh} from '@vicons/ionicons5'
+import {DocumentTextOutline, FlashOutline, FolderOutline, Link, Refresh} from '@vicons/ionicons5'
 import Path from '../../components/path.vue'
 import Code from '../../components/code.vue'
-import DragDown from '../../components/DropDown.vue'
 import {h, onMounted, ref} from 'vue';
 import {scanDir} from '../../services/dir.js'
 import {diffLines} from '../../services/diff.js'
@@ -113,11 +156,50 @@ import {getFileContent, modifyFile} from '../../services/file.js'
 import {useRoute} from 'vue-router';
 import Diff from '../../components/Diff.vue'
 import {formatTime} from '../../services/time.js'
-import CreateForm from "./file/create-form.vue";
 import {useAnimation} from "../../hooks/animation.js";
+import {useForm} from "../../hooks/common.js";
+import {useFSOperation} from "../../hooks/file.js";
 
 const message = useMessage()
 const route = useRoute()
+
+const {CreateDir, CreateFile} = useFSOperation()
+
+const {form: createForm, Submit: submitCreateForm} = useForm({
+  type: 'file',
+  name: '',
+  probeId: route.params.probeId,
+  permission: ''
+}, async (f) => {
+  let path = parent.value + (parent.value === '/' ? '' : '/') + f.name
+
+  if (f.type === 'file') {
+
+    let success = await CreateFile({
+      probeId: f.probeId,
+      path: path,
+      permission: f.permission
+    })
+
+    if (success) {
+      await goToPath(parent.value)
+      showCreateForm.value = false
+    }
+  }
+
+  if (f.type === 'dir') {
+
+    let success = await CreateDir({
+      probeId: f.probeId,
+      path: path,
+      permission: f.permission
+    })
+    if (success) {
+      await goToPath(parent.value)
+      showCreateForm.value = false
+    }
+  }
+})
 
 // 当前ip地址
 const probeId = ref('')
@@ -255,9 +337,7 @@ const modifyContent = async () => {
 }
 
 
-
-
-const { SameTimeAnimate } = useAnimation([root])
+const {SameTimeAnimate} = useAnimation([root])
 
 
 onMounted(() => {
@@ -265,11 +345,6 @@ onMounted(() => {
   probeId.value = route.params.probeId
   init()
 })
-
-
-
-
-
 
 
 const pagination = ref({
@@ -330,7 +405,7 @@ const tableCols = [
             class: "text-blue-500"
           },
           {
-            default: () => (row.isDir || row.isLink) ?  '':[
+            default: () => (row.isDir || row.isLink) ? '' : [
               h('button',
                   {
                     class: 'mr-2 hover:underline'
@@ -357,10 +432,10 @@ const moreOptions = [
     label: () => h(
         'span',
         {
-          'class' : 'text-red-500'
+          'class': 'text-red-500'
         },
         {
-          default : () => '删除'
+          default: () => '删除'
         }
     ),
     key: "brown's hotel, london"

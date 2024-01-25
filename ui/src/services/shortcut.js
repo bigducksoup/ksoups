@@ -2,7 +2,23 @@ import {baseUrl} from '../state/index.js'
 import {useMessage} from 'naive-ui'
 
 
+/**
+ * 创建快捷方式
+ * @param shortcutForm
+ * @returns {Promise<void>}
+ */
+const createShortcut = async (shortcutForm)=>{
+    let sid = window.localStorage.getItem('sid')
 
+    let res =  await fetch(baseUrl.value + "api/shortcut/create" , {
+        method:'POST',
+        headers: {
+            'sid': sid
+        },
+        body:JSON.stringify(shortcutForm)
+    })
+    return await res.json()
+}
 
 const listShortcut = async (probeId)=>{
 
@@ -34,6 +50,11 @@ const runShortcut = async (shortcutId)=>{
 }
 
 
+/**
+ *
+ * @param shortcutId
+ * @returns {Promise<any>}
+ */
 const deleteShortcut = async (shortcutId)=>{
     const message = useMessage()
     let sid = window.localStorage.getItem('sid')
@@ -59,17 +80,27 @@ const getShortcutGroup = async ()=>{
             'sid': sid
         }
     })
+    return await res.json()
+}
 
-    
 
-    let json = await res.json()
-
-    return json
+const updateShortcut = async (shortcut)=>{
+    let sid = window.localStorage.getItem('sid')
+    let res =  await fetch(baseUrl.value + "api/shortcut/update" , {
+        method:"POST",
+        headers: {
+            'sid': sid
+        },
+        body:JSON.stringify(shortcut)
+    })
+    return  await res.json()
 }
 
 export {
     listShortcut,
     runShortcut,
     deleteShortcut,
-    getShortcutGroup
+    getShortcutGroup,
+    createShortcut,
+    updateShortcut
 }

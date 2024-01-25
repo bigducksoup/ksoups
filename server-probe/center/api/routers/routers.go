@@ -2,7 +2,6 @@ package routers
 
 import (
 	"config-manager/center/api/handler"
-	"config-manager/center/api/middleware"
 	"config-manager/center/static"
 	"io/fs"
 	"net/http"
@@ -27,12 +26,14 @@ func SetUpRouters(engine *gin.Engine) {
 
 	engine.StaticFileFS("/logo.svg", "dist/logo.svg", statics)
 
+	engine.StaticFileFS("/bg.jpg", "dist/bg.jpg", statics)
+
 	engine.StaticFS("/assets", assets)
 
 	// api path
 	apiGroup := engine.Group("/api")
 	// use auth middleware
-	apiGroup.Use(middleware.AuthMiddleWare())
+	//apiGroup.Use(middleware.AuthMiddleWare())
 	{
 		// 文件相关
 		fileGroup := apiGroup.Group("/file")
@@ -77,6 +78,9 @@ func SetUpRouters(engine *gin.Engine) {
 
 			// 快捷指令分组 根据probeId
 			shortcutGroup.GET("/group", handler.ShortcutGroup)
+
+			// 更新快捷指令
+			shortcutGroup.POST("/update", handler.UpdateShortcut)
 		}
 
 		// 链式指令调度相关
@@ -91,6 +95,9 @@ func SetUpRouters(engine *gin.Engine) {
 
 			// 创建链式指令
 			chainGroup.POST("/create", handler.ChainCreate)
+
+			// 删除链式指令
+			chainGroup.DELETE("/delete", handler.ChainDelete)
 
 			// 创建链式指令节点
 			chainGroup.POST("/node/create", handler.NodeCreate)

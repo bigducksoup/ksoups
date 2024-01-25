@@ -38,6 +38,25 @@ func ChainCreate(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success(ch))
 }
 
+// ChainDelete 删除链
+func ChainDelete(c *gin.Context) {
+
+	id, ok := c.GetQuery("chainId")
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	err := service.ChainCRUD.DeleteChain(id)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.SuccessWithNoData())
+}
+
 func NodeCreate(c *gin.Context) {
 
 	p := param.NodeCreateParams{}

@@ -75,7 +75,12 @@ const modifyFile = async (ProbeId,path,diffRes) => {
 
 }
 
-
+/**
+ * @param {String} probeId
+ * @param {String} path
+ * @param {String} permission
+ * @return {Promise<Object>}
+ */
 const createFile = async (probeId,path,permission) => {
 
     let sid =  window.localStorage.getItem('sid')
@@ -93,9 +98,7 @@ const createFile = async (probeId,path,permission) => {
         })
     })
 
-    let json  = await res.json()
-
-    return json
+    return await res.json()
 
 }
 

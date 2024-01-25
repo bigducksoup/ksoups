@@ -14,27 +14,28 @@ export const useAnimation = (refs) => {
     }
 
     const animate = () => {
-        refs.forEach((element,index)=>{
-            setTimeout(()=>{
+        refs.forEach((element, index) => {
+            setTimeout(() => {
                 element.value.classList.add('animate__animated')
                 element.value.classList.add(animationClass.value)
                 element.value.classList.add(speedCLass.value)
-            },index*100)
+            }, index * 100)
         })
     }
 
     const remove = () => {
-        refs.forEach((element,index)=>{
-            setTimeout(()=>{
+        refs.forEach((element, index) => {
+            setTimeout(() => {
                 element.value.classList.remove('animate__animated')
                 element.value.classList.remove(animationClass.value)
                 element.value.classList.remove(speedCLass.value)
-            },index*100)
+            }, index * 100)
         })
     }
 
     const forceRemove = () => {
-        refs.forEach((element,index)=>{
+
+        refs.forEach((element, index) => {
             element.value.classList.remove('animate__animated')
             element.value.classList.remove(animationClass.value)
             element.value.classList.remove(speedCLass.value)
@@ -42,27 +43,25 @@ export const useAnimation = (refs) => {
     }
 
     const forceAdd = () => {
-        refs.forEach((element,index)=>{
+        refs.forEach((element, index) => {
             element.value.classList.add('animate__animated')
             element.value.classList.add(animationClass.value)
             element.value.classList.add(speedCLass.value)
         })
     }
 
-    const DoAnimate = (animation,speed) => {
+    const DoAnimate = (animation, speed) => {
         forceRemove()
         animationClass.value = animation
         speedCLass.value = speed
         animate()
     }
 
-    const SameTimeAnimate = (animation,speed) => {
+    const SameTimeAnimate = (animation, speed) => {
         forceRemove()
         animationClass.value = animation
         speedCLass.value = speed
-        requestAnimationFrame(()=>{
-            forceAdd()
-        })
+        forceAdd()
     }
 
     const AddRefs = (ref) => {
@@ -70,7 +69,7 @@ export const useAnimation = (refs) => {
     }
 
     const RemoveRefs = (ref) => {
-        refs.splice(refs.indexOf(ref),1)
+        refs.splice(refs.indexOf(ref), 1)
     }
 
     const RemoveAllRefs = () => {
@@ -78,7 +77,7 @@ export const useAnimation = (refs) => {
     }
 
 
-    return {DoAnimate,SetAnimationClass,AddRefs,RemoveRefs,RemoveAllRefs,SameTimeAnimate}
+    return {DoAnimate, SetAnimationClass, AddRefs, RemoveRefs, RemoveAllRefs, SameTimeAnimate, forceRemove}
 
 
 }
