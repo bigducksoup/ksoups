@@ -200,7 +200,7 @@ func UpdateSSHInfo(c *gin.Context) {
 		return
 	}
 
-	err = global.DB.Save(&info).Error
+	err = global.DB.Updates(&info).Error
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
@@ -212,7 +212,7 @@ func UpdateSSHInfo(c *gin.Context) {
 
 func DeleteSSHInfo(c *gin.Context) {
 
-	id, ok := c.GetQuery("id")
+	id, ok := c.GetQuery("infoId")
 
 	if !ok {
 		c.JSON(http.StatusOK, response.ParamsError())

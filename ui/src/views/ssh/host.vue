@@ -193,7 +193,13 @@ onMounted(() => {
                       GetSSHGroupContent(curGroupId)
                       GetGroupTree()
                     }"></group-item>
-        <SSHInfoItem v-if="item.type === 1" :info="item.payload"></SSHInfoItem>
+        <SSHInfoItem v-if="item.type === 1" :info="item.payload" :group-tree="groupTree"
+                     @onDelete="()=>{
+                       GetSSHGroupContent(curGroupId)
+                     }"
+                     @onUpdate="()=>{
+                       GetSSHGroupContent(curGroupId)
+                     }"></SSHInfoItem>
       </div>
     </div>
   </div>

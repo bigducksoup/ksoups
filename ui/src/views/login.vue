@@ -5,10 +5,10 @@
 
     <div class=" w-full sm:w-[400px] h-full bg-[#0C3451] rounded-2xl shadow flex flex-col p-8 text-white">
       <div class="w-full h-10 text-base mb-5">
-        新概念运维中心
+        轻量级运维中心
       </div>
       <div class="w-full h-12 text-2xl">
-        更轻松，更高效
+        简洁，轻快
         <div>
           <span class="text-sm text-gray-500">当前只支持Linux, MacOS</span>
         </div>

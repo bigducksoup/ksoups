@@ -17,6 +17,7 @@ export const getSSHGroupContent = async ( groupId = 'root' ) => {
     return await res.json()
 }
 
+
 //http://127.0.0.1:8080/api/ssh/group/save
 export const saveSSHGroup = async (name = '',parentId = '')=>{
     let sid = window.localStorage.getItem('sid')
@@ -53,6 +54,42 @@ export const saveSSHInfo = async (info)=>{
             'Content-Type':'application/json'
         },
         body:JSON.stringify(info)
+    })
+
+    return await res.json()
+}
+
+/**
+ * @param {object} info
+ * @param {string} info.groupId
+ * @param {string} info.addrPort
+ * @param {string} info.username
+ * @param {string} info.password
+ * @returns
+ */
+export const updateSSHInfo = async (info) => {
+    let sid = window.localStorage.getItem('sid')
+
+    let res = await fetch(baseUrl.value + 'api/ssh/info/update',{
+        method:'POST',
+        headers: {
+            'sid':sid,
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify(info)
+    })
+
+    return await res.json()
+}
+
+export const deleteSSHInfo = async (infoId = '') => {
+    let sid = window.localStorage.getItem('sid')
+
+    let res = await fetch(baseUrl.value + 'api/ssh/info/delete?' + `infoId=${infoId}`,{
+        method:'DELETE',
+        headers: {
+            'sid':sid,
+        },
     })
 
     return await res.json()

@@ -1,10 +1,10 @@
 import {
-    deleteSSHGroup,
+    deleteSSHGroup, deleteSSHInfo,
     getSSHGroupContent,
     getSSHGroupTree,
     saveSSHGroup,
     saveSSHInfo,
-    updateSSHGroup
+    updateSSHGroup, updateSSHInfo
 } from "../services/ssh.js";
 import { useMessage } from 'naive-ui'
 import {onMounted, ref} from "vue";
@@ -127,4 +127,45 @@ export const useSSHGroupOperation = () => {
     return {DeleteSSHGroup,SaveSSHGroup,UpdateSSHGroup}
 
 
+}
+
+
+
+export const useSSHInfoOperation = () => {
+    const message = useMessage()
+
+    const SaveSSHInfo = async (info)=>{
+        let res = await saveSSHInfo(info)
+
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return false
+        }
+        message.success(res['msg'])
+        return true
+    }
+
+    const UpdateSSHInfo = async (info) => {
+        let res = await updateSSHInfo(info)
+
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return false
+        }
+        message.success(res['msg'])
+        return true
+    }
+
+    const DeleteSSHInfo = async (infoId) => {
+        let res = await deleteSSHInfo(infoId)
+
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return false
+        }
+        message.success(res['msg'])
+        return true
+    }
+
+    return {SaveSSHInfo,UpdateSSHInfo,DeleteSSHInfo}
 }
