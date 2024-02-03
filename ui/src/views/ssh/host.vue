@@ -36,7 +36,7 @@ const onClickItem = (item) => {
 
   if (item.type === 1) {
     const {href} = router.resolve({
-      name: "terminal",
+      name: 'index',
       query: {
         sshId: item.payload.id,
       },

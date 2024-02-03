@@ -3,6 +3,7 @@ import {createRouter, createWebHashHistory, createWebHistory} from "vue-router";
 const routes = [
     {
         path: "/",
+        name:'index',
         component: () => import("../views/main.vue"),
         meta: {
             transition: 'none'

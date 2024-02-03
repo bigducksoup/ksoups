@@ -1,9 +1,19 @@
 <script setup>
 
-import {useRouter} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
+if (route.query.sshId) {
+
+  router.push({
+    name: 'terminal',
+    query: {
+      sshId: route.query.sshId,
+    },
+  })
+}
 
 </script>
 

@@ -1,0 +1,3 @@
+name: mac-os
+center-addr: 127.0.0.1:5529
+script-path: scripts
