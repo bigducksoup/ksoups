@@ -164,12 +164,12 @@ onMounted(() => {
 @keyframes full-to-normal {
   0% {
     height: 100vh;
-    background-color: #272727;
+    background-color: #05253A;
     color: transparent;
   }
 
   30% {
-    background-color: #272727;
+    background-color: #05253A;
     color: transparent;
   }
 

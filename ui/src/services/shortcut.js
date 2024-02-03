@@ -96,11 +96,24 @@ const updateShortcut = async (shortcut)=>{
     return  await res.json()
 }
 
+
+//http://127.0.0.1:8080/api/shortcut/group
+const getShortcutRunHistory = async (shortcutId)=>{
+    let sid = window.localStorage.getItem('sid')
+    let res =  await fetch(baseUrl.value + "api/shortcut/run/history" + "?shortcutId=" + shortcutId , {
+        headers: {
+            'sid': sid
+        }
+    })
+    return await res.json()
+}
+
 export {
     listShortcut,
     runShortcut,
     deleteShortcut,
     getShortcutGroup,
     createShortcut,
-    updateShortcut
+    updateShortcut,
+    getShortcutRunHistory
 }

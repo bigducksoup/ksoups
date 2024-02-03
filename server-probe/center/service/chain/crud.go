@@ -1,8 +1,8 @@
 package chain
 
 import (
+	"config-manager/center/api/vo"
 	"config-manager/center/model"
-	"config-manager/center/vo"
 	"config-manager/common/utils"
 	"errors"
 	"log"

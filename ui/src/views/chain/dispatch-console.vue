@@ -76,7 +76,10 @@ const {tableData, columns, SetData} = useDataTable([
   },
   {
     title: '指令',
-    key: 'payload'
+    key: 'payload',
+    ellipsis: {
+      tooltip: true
+    }
   },
   {
     title: '执行时间',

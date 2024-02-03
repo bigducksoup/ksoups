@@ -1,6 +1,7 @@
-import {createFile} from "../services/file.js";
+import {createFile, getFileContent, modifyFile} from "../services/file.js";
 import {useMessage} from "naive-ui";
 import {createDir} from "../services/dir.js";
+import {diffLines} from "../services/diff.js";
 
 const useFSOperation = () => {
 
@@ -56,9 +57,40 @@ const useFSOperation = () => {
     }
 
 
+    const GetFileContent = async (probeId, path) => {
+
+        let res = await getFileContent(probeId, path);
+
+        if (res.code !== 200){
+            message.error(res.msg);
+            return  null
+        }
+
+        return res.data.content;
+    }
+
+    const EditFile = async (probeId, path, originContent,editedContent) => {
+
+        console.log(originContent)
+        console.log(editedContent)
+
+        let diffRes = diffLines(originContent, editedContent);
+
+        let res = await modifyFile(probeId, path, diffRes);
+
+        if (res.code !== 200){
+            message.error(res.msg);
+            return false;
+        }
+        return true;
+    }
+
+
     return {
         CreateFile,
-        CreateDir
+        GetFileContent,
+        CreateDir,
+        EditFile
     }
 
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"config-manager/center/api/middleware"
 	"config-manager/center/api/routers"
+	"config-manager/center/api/ws"
 	"context"
 	"errors"
 	"log"
@@ -15,6 +16,9 @@ import (
 )
 
 func InitApiServer(port string) {
+
+	//初始化websocket
+	ws.Init()
 
 	gin.SetMode(gin.ReleaseMode)
 	e := gin.New()

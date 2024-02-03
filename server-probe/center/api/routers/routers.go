@@ -2,6 +2,8 @@ package routers
 
 import (
 	"config-manager/center/api/handler"
+	"config-manager/center/api/middleware"
+	"config-manager/center/api/ws"
 	"config-manager/center/static"
 	"io/fs"
 	"net/http"
@@ -32,8 +34,10 @@ func SetUpRouters(engine *gin.Engine) {
 
 	// api path
 	apiGroup := engine.Group("/api")
+
+	engine.GET("/ws/:app", ws.HandleWS)
 	// use auth middleware
-	//apiGroup.Use(middleware.AuthMiddleWare())
+	apiGroup.Use(middleware.AuthMiddleWare())
 	{
 		// 文件相关
 		fileGroup := apiGroup.Group("/file")
@@ -81,6 +85,9 @@ func SetUpRouters(engine *gin.Engine) {
 
 			// 更新快捷指令
 			shortcutGroup.POST("/update", handler.UpdateShortcut)
+
+			// 快捷指令运行历史
+			shortcutGroup.GET("/run/history", handler.ShortcutRunHistory)
 		}
 
 		// 链式指令调度相关
@@ -141,6 +148,9 @@ func SetUpRouters(engine *gin.Engine) {
 			infoGroup.GET("/nodes", handler.OnlineNode)
 
 		}
+
+		// ssh相关
+		handler.SSHHandlerLoad(apiGroup)
 
 		// 鉴权相关
 		authGroup := apiGroup.Group("/auth")

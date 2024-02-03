@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# 保存原始的 GOOS 和 GOARCH 环境变量的值
-ORIGINAL_GOOS="$GOOS"
-ORIGINAL_GOARCH="$GOARCH"
-
-ORIGINAL_CC="$CC"
-ORIGINAL_CXX="$CXX"
-
 # 定义目标平台和架构
 TARGET_OS="linux"
 TARGET_ARCH=("amd64")
@@ -16,6 +9,8 @@ rm -rf build
 
 # 创建构建目录
 mkdir -p build
+
+
 
 # 遍历目标架构，进行交叉编译
 for arch in "${TARGET_ARCH[@]}"; do
@@ -41,8 +36,6 @@ for arch in "${TARGET_ARCH[@]}"; do
 done
 
 
-
-
 # 遍历目标架构，进行交叉编译
 for arch in "${TARGET_ARCH[@]}"; do
     output_name="probe_${TARGET_OS}_${arch}"
@@ -65,6 +58,3 @@ for arch in "${TARGET_ARCH[@]}"; do
     fi
 done
 
-# 恢复原来的配置
-export GOOS="$ORIGINAL_GOOS"
-export GOARCH="$ORIGINAL_GOARCH"

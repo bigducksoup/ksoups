@@ -3,7 +3,7 @@ import {reactive, ref} from "vue";
 
 export const useForm = (formValue, onSubmit) => {
 
-    const initialForm = formValue
+    const initialForm = JSON.parse(JSON.stringify(formValue))
 
     let form = reactive(formValue)
 
@@ -55,4 +55,15 @@ export const useDataTable = (columns,data) => {
 
     return { AddItem,RemoveItemByIndex, RemoveItemByCondition,SetData, tableData,columns}
 
+}
+
+
+export const useMenu = (options= [],onUpdate = (key, item) => {
+    console.log(key,item)
+}) => {
+    const MenuOption = ref(options)
+
+    const Key = ref('')
+
+    return { MenuOption, onUpdate,Key }
 }

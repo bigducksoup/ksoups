@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from "vue-router";
+import {createRouter, createWebHashHistory, createWebHistory} from "vue-router";
 
 const routes = [
     {
@@ -40,8 +40,30 @@ const routes = [
                 path: "shortcut/:probeId",
                 name: "shortcut",
                 component: () => import('../views/probe/shortcut.vue')
-            }
+            },
         ],
+    },
+    {
+        path: '/ssh',
+        name: 'ssh',
+        component: () => import('../views/ssh.vue'),
+        children: [
+            {
+                path: 'host',
+                name: 'host',
+                component: () => import('../views/ssh/host.vue')
+            },
+            {
+                path: 'term',
+                name: 'term',
+                component: () => import('../views/ssh/term.vue')
+            }
+        ]
+    },
+    {
+        path: '/terminal',
+        name: 'terminal',
+        component: () => import('../views/terminal.vue')
     },
     {
         path: "/login",

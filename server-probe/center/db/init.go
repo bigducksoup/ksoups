@@ -36,6 +36,8 @@ func InitDB() {
 		&model.Edge{},
 		&model.ShortcutNodeBinding{},
 		&model.ProbeInfo{},
+		&model.SSHInfo{},
+		&model.SSHGroup{},
 	)
 	if err != nil {
 		panic(err)
@@ -50,6 +52,17 @@ func InitDB() {
 		Account:  global.Conf.Account,
 		Password: utils.Md5([]byte(global.Conf.Password)),
 	})
+
+	rootg := model.SSHGroup{}
+
+	count := db.Where("id = ?", "root").First(&rootg).RowsAffected
+
+	if count == 0 {
+		rootg.Id = "root"
+		rootg.Name = "root"
+		rootg.Parent = nil
+		db.Save(&rootg)
+	}
 
 	// 初始化全局变量
 	global.DB = db

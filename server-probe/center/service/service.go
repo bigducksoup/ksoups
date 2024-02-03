@@ -5,6 +5,7 @@ import (
 	"config-manager/center/global"
 	"config-manager/center/service/chain"
 	"config-manager/center/service/shortcut"
+	"config-manager/center/service/ssh"
 )
 
 var (
@@ -16,6 +17,10 @@ var (
 	ChainCRUD chain.CRUDService
 	ChainEXEC chain.ExecService
 	ChainLOG  chain.LogService
+)
+
+var (
+	SSHCRUD ssh.CRUDService
 )
 
 func Init() {
@@ -30,4 +35,7 @@ func Init() {
 		ChainCRUD: &ChainCRUD,
 		Log:       &ChainLOG,
 	}
+
+	SSHCRUD = ssh.CRUDService{Db: global.DB}
+
 }

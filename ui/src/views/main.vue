@@ -9,26 +9,35 @@ const router = useRouter()
 
 <!-- 在你的 Vue 文件中 -->
 <template>
-  <div class="w-screen min-h-screen bg-[#13151D] flex backGround">
-    <div class="w-full h-screen -translate-y-14  p-5 flex flex-col items-center justify-center md:justify-normal md:translate-y-0 md:w-60 md:items-start">
+  <div class="w-screen min-h-screen bg-[#05253A] flex backGround relative">
+    <div
+        class="w-full h-screen -translate-y-14  p-5 flex flex-col transition-all items-center justify-center md:justify-normal md:translate-y-0 md:w-60 md:items-start">
       <div class="nav-text" @click="router.push('/probe')">
         节点管理
       </div>
       <div class="nav-text" @click="router.push('/chain')">
         命令调度
       </div>
+      <div class="nav-text" @click="router.push('/ssh')">
+        终端
+      </div>
     </div>
+
+    <div class="absolute left-1/2 top-1/2 md:-translate-y-1/2 transition-all translate-y-36 -translate-x-1/2 text-blue-500 text-xl ">
+      fmt.Println("Hello, World!")
+    </div>
+
   </div>
 </template>
 
 <style scoped>
 
 .backGround {
-  background-image: url("/bg.jpg");
   background-repeat: no-repeat;
-  background-position: center ;
+  background-position: center;
   background-size: cover;
 }
+
 .nav-text {
   @apply
   text-3xl
@@ -66,7 +75,6 @@ const router = useRouter()
 .underline-animation:hover::after {
   width: 100%;
 }
-
 
 
 @keyframes TextShowUp {

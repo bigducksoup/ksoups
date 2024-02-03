@@ -45,3 +45,16 @@ func (r *RUNService) Run(id string) (out string, error error) {
 	}
 	return
 }
+
+func (r *RUNService) RunHistory(id string) (runHistory []model.ShortcutExecLog, error error) {
+
+	if r.Db == nil {
+		return nil, errors.New("db is nil")
+	}
+
+	tx := r.Db.Order("execute_time desc").Find(&runHistory, "shortcut_id = ?", id)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return
+}

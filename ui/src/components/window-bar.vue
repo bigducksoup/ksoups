@@ -1,6 +1,6 @@
 <template>
 
-    <div class="w-full h-6 bg-gray-700 relative flex items-center">
+    <div class="w-full h-6 bg-[#242424] relative flex items-center border-b-[1px] border-black">
 
         <div class="w-2"></div>
         <div @click="onClose" class="w-4 h-4 rounded-full flex items-center justify-center bg-red-500">

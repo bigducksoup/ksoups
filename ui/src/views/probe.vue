@@ -87,7 +87,7 @@ const message = useMessage()
 
 
 const topBarStyle = ref({
-  backgroundColor: '#262626',
+  backgroundColor: '#05253A',
   transition: '0.9s',
   animation : 'screen-up 0.6s',
   animationIterationCount: '1'
@@ -130,7 +130,7 @@ const backToMain = () => {
 
   // Reset the animation
   topBarStyle.value.animation = 'none';
-  topBarStyle.value.backgroundColor = '#262626';
+  topBarStyle.value.backgroundColor = '#05253A';
 
   // Use requestAnimationFrame to ensure the style changes are applied
   requestAnimationFrame(() => {
@@ -229,7 +229,7 @@ const menuOptions = [
         }
     ),
     key: 'shortcut'
-  }
+  },
 ]
 </script>
 

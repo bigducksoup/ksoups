@@ -1,5 +1,11 @@
 import {ref} from "vue";
-import {createShortcut, deleteShortcut, getShortcutGroup, updateShortcut} from "../services/shortcut.js";
+import {
+    createShortcut,
+    deleteShortcut,
+    getShortcutGroup,
+    getShortcutRunHistory,
+    updateShortcut
+} from "../services/shortcut.js";
 import {useMessage} from "naive-ui";
 
 
@@ -88,9 +94,35 @@ const useShortcutOperation = () => {
 
     return {DeleteShortcutById, UpdateShortcut,CreateShortcut,updateShortcut}
 
+}
 
+
+
+
+const useShortcutInfos = () => {
+
+    const message = useMessage()
+
+    /**
+     * 获取指令执行历史
+     * @param {String} id
+     * @return {Promise<Object|null>}
+     * @constructor
+     */
+    const GetShortcutRunHistory = async (id) => {
+        let res = await getShortcutRunHistory(id)
+        if (res['code'] !== 200 ){
+            message.error(res['msg'])
+            return []
+        }
+        return res['data']
+    }
+
+    return {GetShortcutRunHistory}
 
 }
 
 
-export {useShortcutGroup, useShortcutOperation}
+
+
+export {useShortcutGroup, useShortcutOperation,useShortcutInfos}

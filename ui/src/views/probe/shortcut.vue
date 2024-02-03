@@ -24,7 +24,7 @@
     </div>
 
 
-    <n-drawer v-model:show="createSCShow" :width="500">
+    <n-drawer v-model:show="createSCShow" :on-after-leave="clearShortcutForm" :width="500">
       <n-drawer-content title="创建快捷指令" :native-scrollbar="false">
         <n-form :model="shortcutForm" :label-width="160">
 
@@ -99,8 +99,23 @@
             </n-switch>
           </n-form-item>
           <n-form-item label="指令内容">
-            <Code v-model="detailShortcut.payload" height="300px">
-            </Code>
+            <div v-if="detailShortcut.type === 1" class="w-full">
+              <div class="w-full h-10">
+                <n-button @click="showEditor = true" class="w-full">
+                  打开编辑器
+                </n-button>
+              </div>
+              <Code v-if="detailScriptContent !==null" v-model="detailScriptContent" height="300px">
+              </Code>
+              <div v-else>
+                nothing
+              </div>
+            </div>
+
+            <n-input v-else v-model:value="detailShortcut.payload">
+            </n-input>
+
+
           </n-form-item>
           <n-form-item>
             <div class="flex w-full flex-row justify-end">
@@ -126,6 +141,35 @@
     </n-drawer>
 
 
+
+    <n-modal v-model:show="showEditor">
+      <div class="w-[70vw] h-[90vh] shadow-2xl rounded-xl overflow-hidden border-gray-700 border-[1px] flex flex-col">
+        <div class="w-full h-6">
+          <window-bar @onClose="showEditor = false"></window-bar>
+        </div>
+        <div class="w-full h-full">
+          <Code v-model="detailScriptContent" height="100%"></Code>
+        </div>
+      </div>
+    </n-modal>
+
+
+    <n-drawer v-model:show="shortcutHistoryShow" width="100vw">
+      <n-drawer-content title="执行记录" closable>
+        <div :class="item.ok ? 'runRecord-success':'runRecord-error' " v-for="item in shortcutHistory">
+            <div class="text-xl text-white">
+              执行时间 {{ formatTime(item.executeTime) }}
+            </div>
+            <div class="text-white">
+              输出：
+            </div>
+            <n-log :log="item.out">
+
+            </n-log>
+        </div>
+      </n-drawer-content>
+    </n-drawer>
+
   </div>
 
 
@@ -146,29 +190,50 @@ import {
   NIcon,
   NInput,
   NInputNumber,
-  NPopconfirm, NRadioButton, NRadioGroup,
+  NModal,
+  NPopconfirm,
+  NRadioButton,
+  NRadioGroup,
   NSwitch,
+  NTag,
+    NLog,
   useNotification
 } from 'naive-ui'
 import {Add, Play} from '@vicons/ionicons5'
 import Code from '../../components/code.vue'
 import {listShortcut, runShortcut} from '../../services/shortcut.js'
 import {useAnimation} from "../../hooks/animation.js";
-import {useShortcutOperation} from "../../hooks/shortcut.js";
+import {useShortcutInfos, useShortcutOperation} from "../../hooks/shortcut.js";
 import {useDataTable, useForm} from "../../hooks/common.js";
-
+import {useFSOperation} from "../../hooks/file.js";
+import WindowBar from "../../components/window-bar.vue";
+import {formatTime} from "../../services/time.js";
 
 const route = useRoute()
 const notification = useNotification()
 
+// 指令列表
 const shortcuts = ref([])
 
+// 显示指令创建抽屉
 const createSCShow = ref(false)
+
+// 显示指令详情抽屉
 const shortcutDetailShow = ref(false)
 
 const detailShortcut = ref({})
 
-const {form: shortcutForm, Submit: submitShortcutForm} = useForm({
+const backupScriptContent = ref(null)
+const detailScriptContent = ref(null)
+
+const showEditor = ref(false)
+
+const { GetFileContent,EditFile } = useFSOperation()
+
+
+const { GetShortcutRunHistory } = useShortcutInfos()
+
+const {form: shortcutForm, Submit: submitShortcutForm,Clear:clearShortcutForm} = useForm({
   'probeId': route.params.probeId,
   'name': '',
   'description': '',
@@ -217,11 +282,24 @@ const {tableData, columns} = useDataTable([
     },
   },
   {
+    title:'类型',
+    key:'type',
+    render: (row) => {
+
+      const property = {
+        round: true,
+        size: 'small'
+      }
+
+      if(row.type === 0)return h(NTag,{type:'success',...property},()=> '单行指令')
+      if (row.type === 1) return h(NTag, {type: 'warning',...property}, () => '脚本指令')
+      return '未知'
+    }
+  },
+  {
     title: '是否仅运行',
     key: 'justRun',
-    render: (row) => {
-      return row.justRun ? 'Yes' : 'No'
-    },
+    render: (row) => row.justRun ? 'Yes' : 'No',
     width: '100px'
   },
   {
@@ -253,6 +331,9 @@ const {tableData, columns} = useDataTable([
       }, () => '详情'),
         h(NButton,{
           class: 'ml-2 flex hover:text-red-500 items-center justify-center',
+          onClick: () => {
+            showShortcutHistory(row)
+          }
         },() => '执行记录')
     ])
   }
@@ -280,9 +361,25 @@ const runOLShortcut = async (shortcut) => {
 }
 
 
-const shortcutDetail = (shortcut) => {
+const shortcutDetail = async (shortcut) => {
   shortcutDetailShow.value = true
   detailShortcut.value = shortcut
+  if(shortcut.type === 1){
+    detailScriptContent.value = await GetFileContent(shortcut.probeId, shortcut.payload)
+    backupScriptContent.value = detailScriptContent.value
+  }
+}
+
+// 显示指令执行历史
+const shortcutHistoryShow = ref(false)
+
+// 指令执行历史
+const shortcutHistory = ref([])
+
+// 显示指令执行历史
+const showShortcutHistory = async (shortcut) => {
+  shortcutHistory.value = await GetShortcutRunHistory(shortcut.id)
+  shortcutHistoryShow.value = true
 }
 
 
@@ -295,6 +392,13 @@ const onClickDeleteShortcut = async () => {
 }
 
 const onClickUpdateShortcut = async () => {
+
+  // 如果是脚本，则先更新文件内容
+  if (detailShortcut.value.type === 1){
+    let success = await EditFile(detailShortcut.value.probeId,detailShortcut.value.payload,backupScriptContent.value,detailScriptContent.value);
+    if (!success) return
+  }
+
   let success = UpdateShortcut(detailShortcut.value)
   if (success) {
     shortcutDetailShow.value = false
@@ -316,6 +420,20 @@ onMounted(() => {
 
 .bounce-leave-active {
   animation: bounce-in 0.5s reverse;
+}
+
+
+
+.runRecord {
+  @apply w-full h-fit mb-2 rounded p-2 bg-gray-600
+}
+
+.runRecord-success {
+  @apply text-green-500 runRecord
+}
+
+.runRecord-error {
+  @apply text-red-500 runRecord
 }
 
 </style>

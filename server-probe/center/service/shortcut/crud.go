@@ -78,7 +78,6 @@ func (c *CRUDService) RemoveShortcut(id string) error {
 	tx.Where("id = ?", id).Delete(&model.Shortcut{})
 	tx.Where("shortcut_id = ?", id).Delete(&model.ShortcutNodeBinding{})
 	return tx.Commit().Error
-
 }
 
 func (c *CRUDService) CreateScriptFile(probeId string, name string, content string) (absPath *string, err error) {

@@ -2,8 +2,8 @@ package chain
 
 import (
 	"config-manager/center/action"
+	"config-manager/center/api/vo"
 	"config-manager/center/model"
-	"config-manager/center/vo"
 	"config-manager/common/utils"
 	"errors"
 	"gorm.io/gorm"

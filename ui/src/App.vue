@@ -32,7 +32,7 @@ onMounted(()=>{
                         router.push('/login')
                   return
                 }
-                router.push('/')
+                // router.push('/')
         })
 
 

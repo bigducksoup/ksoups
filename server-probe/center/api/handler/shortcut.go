@@ -13,8 +13,9 @@ import (
 )
 
 // ShortcutCreate 创建快捷方式
-// 接收一个CreateShortcutParams结构体作为参数，该结构体包含要创建的快捷方式的信息。
-// 返回一个布尔值，指示是否成功创建快捷方式。
+// Params: probeId 探针id，name 快捷方式名称，timeout 超时时间，justRun 是否只运行一次，payload 脚本内容，type 脚本类型，description 描述
+// Response: 200，“success”， true
+// Err: 200, “fail”， err
 func ShortcutCreate(c *gin.Context) {
 	p := param.CreateShortcutParams{}
 	err := c.ShouldBindJSON(&p)
@@ -52,6 +53,9 @@ func ShortcutCreate(c *gin.Context) {
 }
 
 // ListShortcuts 列出指定探针的所有快捷方式
+// Params: probeId 探针id
+// Response: 200，“success”， []model.Shortcut
+// Err: 200, “fail”， err
 func ListShortcuts(c *gin.Context) {
 
 	probeId, b := c.GetQuery("probeId")
@@ -80,7 +84,8 @@ func ListShortcuts(c *gin.Context) {
 }
 
 // ShortcutGroup 快捷方式分组汇总
-// key: 探针id value: 快捷方式数组
+// Params: 无
+// Response: 200，“success”， map[string][]model.Shortcut(key:探针id，value:快捷方式数组)
 func ShortcutGroup(c *gin.Context) {
 
 	groups, err := service.ShortcutCRUD.ShortcutGroup()
@@ -95,6 +100,9 @@ func ShortcutGroup(c *gin.Context) {
 }
 
 // RunShortcut 运行快捷方式
+// Params: shortcutId 快捷方式id
+// Response: 200，“success”， {ok: true, out: out}
+// Err: 200, “fail”， {ok: false, out: err}
 func RunShortcut(c *gin.Context) {
 
 	scId, ok := c.GetQuery("shortcutId")
@@ -119,7 +127,33 @@ func RunShortcut(c *gin.Context) {
 	}))
 }
 
+// ShortcutRunHistory 快捷方式运行历史
+// Params: shortcutId 快捷方式id
+// Response: 200，“success”， []model.ShortcutExecLog
+// Err: 200, “fail”， err
+func ShortcutRunHistory(c *gin.Context) {
+
+	shortcutId, ok := c.GetQuery("shortcutId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	logs, err := service.ShortcutRUN.RunHistory(shortcutId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(logs))
+}
+
 // DeleteShortcut 删除快捷方式
+// Params: shortcutId 快捷方式id
+// Response: 200，“success”， true
+// Err: 200, “fail”， err
 func DeleteShortcut(c *gin.Context) {
 
 	id, ok := c.GetQuery("shortcutId")
@@ -139,6 +173,10 @@ func DeleteShortcut(c *gin.Context) {
 	c.JSON(http.StatusOK, response.SuccessWithNoData())
 }
 
+// UpdateShortcut 更新快捷方式
+// Params: shortcutId 快捷方式id
+// Response: 200，“success”， true
+// Err: 200, “fail”， err
 func UpdateShortcut(c *gin.Context) {
 	var shortcut = model.Shortcut{}
 

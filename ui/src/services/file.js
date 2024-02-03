@@ -11,9 +11,7 @@ const getFileContent = async (probeId, path) => {
         }
     })
 
-    let json = await res.json()
-
-    return json
+    return await res.json()
 }
 
 
@@ -29,9 +27,7 @@ const reqModify = async (params) => {
         body: JSON.stringify(params)
     })
 
-    let json  = await res.json()
-
-    return json
+    return await res.json()
 
 }
 
@@ -70,6 +66,8 @@ const modifyFile = async (ProbeId,path,diffRes) => {
         "probeId": ProbeId,
         "changes": changes
     }
+
+    console.log(modifyParams)
 
     return await reqModify(modifyParams)
 
