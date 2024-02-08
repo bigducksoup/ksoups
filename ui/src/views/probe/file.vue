@@ -22,10 +22,10 @@
       </n-button>
 
 
-      <n-button-group class="ml-2">
-        <n-button>复制</n-button>
-        <n-button>移动</n-button>
-      </n-button-group>
+<!--      <n-button-group class="ml-2">-->
+<!--        <n-button>复制</n-button>-->
+<!--        <n-button>移动</n-button>-->
+<!--      </n-button-group>-->
 
       <div class="grow w-1/3"></div>
 

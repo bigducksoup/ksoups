@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"config-manager/center/api/param"
-	"config-manager/center/api/response"
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/center/service"
-	"config-manager/common/utils"
+	"apps/center/api/param"
+	"apps/center/api/response"
+	"apps/center/global"
+	"apps/center/model"
+	"apps/center/service"
+	"apps/common/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -161,6 +161,13 @@ func DeleteShortcut(c *gin.Context) {
 	if !(ok) {
 		c.JSON(http.StatusOK, response.ParamsError())
 		return
+	}
+	sc := model.Shortcut{}
+	service.ShortcutCRUD.Db.Model(&model.Shortcut{}).Where("id = ?", id).First(&sc)
+
+	if sc.Type == model.SCRIPT {
+		// 删除脚本文件
+		service.FS_OPERATION.DeleteFile(sc.ProbeId, sc.Payload)
 	}
 
 	err := service.ShortcutCRUD.RemoveShortcut(id)

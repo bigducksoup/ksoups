@@ -1,9 +1,9 @@
 package api
 
 import (
-	"config-manager/center/api/middleware"
-	"config-manager/center/api/routers"
-	"config-manager/center/api/ws"
+	"apps/center/api/middleware"
+	"apps/center/api/routers"
+	"apps/center/api/ws"
 	"context"
 	"errors"
 	"log"

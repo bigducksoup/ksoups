@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	. "config-manager/common/message/data"
-	"config-manager/probe/config"
-	shortcutService "config-manager/probe/service/shortcut"
+	. "apps/common/message/data"
+	"apps/probe/config"
+	shortcutService "apps/probe/service/shortcut"
 	"encoding/json"
 )
 

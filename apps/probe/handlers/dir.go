@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	. "config-manager/common/message/data"
-	fileservice "config-manager/probe/service/fs"
+	. "apps/common/message/data"
+	fileservice "apps/probe/service/fs"
 	"encoding/json"
 )
 

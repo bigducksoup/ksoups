@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"config-manager/center/global"
-	"config-manager/center/model"
+	"apps/center/global"
+	"apps/center/model"
 	"github.com/gin-gonic/gin"
 )
 

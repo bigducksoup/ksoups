@@ -1,8 +1,11 @@
 import { ref } from "vue"
 
 
-var baseUrl = ref(import.meta.env.VITE_APP_BASE_URL)
+const baseUrl = ref(import.meta.env.VITE_APP_BASE_URL);
+
+const baseHost = ref(import.meta.env.VITE_APP_BASE_HOST)
 
 export {
-    baseUrl
+    baseUrl,
+    baseHost
 } 

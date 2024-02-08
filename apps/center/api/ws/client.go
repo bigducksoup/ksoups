@@ -1,7 +1,7 @@
 package ws
 
 import (
-	"config-manager/common/utils"
+	"apps/common/utils"
 	"context"
 	"errors"
 	"github.com/gorilla/websocket"

@@ -1,11 +1,10 @@
 package shortcut
 
 import (
-	"config-manager/common/utils"
-	"config-manager/probe/function"
+	"apps/common/utils"
+	"apps/probe/function"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -41,12 +40,5 @@ func CreateScript(name string, prefixPath string, content string) (absolutePath 
 
 	r := scriptFile.Name()
 
-	abs, err := filepath.Abs(r)
-
-	if err != nil {
-		os.Remove(scriptFile.Name())
-		return nil, err
-	}
-
-	return &abs, nil
+	return &r, nil
 }

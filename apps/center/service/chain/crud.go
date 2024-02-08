@@ -1,9 +1,9 @@
 package chain
 
 import (
-	"config-manager/center/api/vo"
-	"config-manager/center/model"
-	"config-manager/common/utils"
+	"apps/center/api/vo"
+	"apps/center/model"
+	"apps/common/utils"
 	"errors"
 	"log"
 	"time"
@@ -189,7 +189,7 @@ func (c *CRUDService) ChainInfo(chainId string) (vo.ChainInfo, error) {
 	}
 
 	//获取所有shortcut
-	var nodeVOs []*vo.NodeVO
+	var nodeVOs = make([]vo.NodeVO, 0)
 
 	for i := range nodes {
 
@@ -221,7 +221,7 @@ func (c *CRUDService) ChainInfo(chainId string) (vo.ChainInfo, error) {
 			nodeVO.FailThenName = &failThen.Name
 		}
 
-		nodeVOs = append(nodeVOs, &nodeVO)
+		nodeVOs = append(nodeVOs, nodeVO)
 	}
 
 	//获取edges
@@ -285,7 +285,7 @@ func (c *CRUDService) DeleteChain(ChainId string) error {
 	tx.Delete(&model.ShortcutNodeBinding{}, "node_id in (select id from nodes where chain_id = ?)", ChainId)
 	tx.Delete(&model.Chain{}, "id = ?", ChainId)
 	tx.Delete(&model.DispatchLog{}, "chain_id = ?", ChainId)
-	tx.Delete(&model.NodeExecLog{}, "node_id in (select id from nodes where chain_id = ?)", ChainId)
+	tx.Delete(&model.NodeExecLog{}, "chain_id = ?", ChainId)
 	tx.Delete(&model.Node{}, "chain_id = ?", ChainId)
 
 	err := tx.Commit().Error

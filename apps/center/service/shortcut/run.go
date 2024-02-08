@@ -1,9 +1,9 @@
 package shortcut
 
 import (
-	"config-manager/center/action"
-	"config-manager/center/model"
-	"config-manager/common/utils"
+	"apps/center/action"
+	"apps/center/model"
+	"apps/common/utils"
 	"errors"
 	"gorm.io/gorm"
 	"time"

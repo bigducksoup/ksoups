@@ -1,10 +1,10 @@
 package routers
 
 import (
-	"config-manager/center/api/handler"
-	"config-manager/center/api/middleware"
-	"config-manager/center/api/ws"
-	"config-manager/center/static"
+	"apps/center/api/handler"
+	"apps/center/api/middleware"
+	"apps/center/api/ws"
+	"apps/center/static"
 	"io/fs"
 	"net/http"
 

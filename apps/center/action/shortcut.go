@@ -1,10 +1,10 @@
 package action
 
 import (
-	"config-manager/center/model"
-	"config-manager/center/server"
-	"config-manager/common/message"
-	"config-manager/common/message/data"
+	"apps/center/model"
+	"apps/center/server"
+	"apps/common/message"
+	"apps/common/message/data"
 	"encoding/json"
 	"time"
 )
@@ -36,7 +36,7 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	}
 
 	if !resp.Ok {
-		return resp.Err, false
+		return resp.StdErr, false
 	}
 	return resp.StdOut, true
 

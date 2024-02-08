@@ -1,11 +1,13 @@
 package service
 
 import (
-	scrun "config-manager/center/action"
-	"config-manager/center/global"
-	"config-manager/center/service/chain"
-	"config-manager/center/service/shortcut"
-	"config-manager/center/service/ssh"
+	scrun "apps/center/action"
+	"apps/center/global"
+	"apps/center/server"
+	"apps/center/service/chain"
+	"apps/center/service/fs"
+	"apps/center/service/shortcut"
+	"apps/center/service/ssh"
 )
 
 var (
@@ -23,6 +25,10 @@ var (
 	SSHCRUD ssh.CRUDService
 )
 
+var (
+	FS_OPERATION fs.OperationService
+)
+
 func Init() {
 	ShortcutCRUD = shortcut.CRUDService{Db: global.DB}
 	ShortcutRUN = shortcut.RUNService{
@@ -37,5 +43,6 @@ func Init() {
 	}
 
 	SSHCRUD = ssh.CRUDService{Db: global.DB}
+	FS_OPERATION = fs.OperationService{ServerCtx: &(server.Ctx)}
 
 }

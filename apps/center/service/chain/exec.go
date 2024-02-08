@@ -1,10 +1,10 @@
 package chain
 
 import (
-	"config-manager/center/action"
-	"config-manager/center/api/vo"
-	"config-manager/center/model"
-	"config-manager/common/utils"
+	"apps/center/action"
+	"apps/center/api/vo"
+	"apps/center/model"
+	"apps/common/utils"
 	"errors"
 	"gorm.io/gorm"
 	"sync"
@@ -61,7 +61,8 @@ func (e *ExecService) DoSingleStepDispatch(dispatchId string) error {
 
 	d := dispatcher.(*action.Dispatcher)
 
-	curNodeId, ok := d.CurNodeId()
+	curNode, ok := d.GetCurNode()
+	shortcut, sok := d.CurShortcut()
 
 	err := d.Next()
 
@@ -80,14 +81,26 @@ func (e *ExecService) DoSingleStepDispatch(dispatchId string) error {
 	}
 
 	if ok {
+
 		nodeExecLog := model.NodeExecLog{
 			Id:         utils.UUID(),
 			DispatchId: d.Id,
 			Ok:         d.Ok,
 			Out:        d.Out,
-			NodeId:     *curNodeId,
+			NodeName:   &curNode.Name,
+			ChainId:    d.ChainId,
+			NodeId:     curNode.Id,
 			CreateTime: time.Now(),
 		}
+
+		if sok {
+			nodeExecLog.ShortcutId = &shortcut.Id
+			nodeExecLog.ShortcutName = &shortcut.Name
+			nodeExecLog.ShortcutType = &shortcut.Type
+			nodeExecLog.ProbeId = &shortcut.ProbeId
+			nodeExecLog.Payload = &shortcut.Payload
+		}
+
 		e.Log.Db.Create(&nodeExecLog)
 	}
 
@@ -160,7 +173,8 @@ func (e *ExecService) DoDispatch(dispatcher *action.Dispatcher) error {
 
 	for {
 
-		curNodeId, ok := dispatcher.CurNodeId()
+		curNode, ok := dispatcher.GetCurNode()
+		shortcut, sok := dispatcher.CurShortcut()
 
 		err := dispatcher.Next()
 		if errors.Is(err, action.ErrNoMoreNode) {
@@ -177,14 +191,26 @@ func (e *ExecService) DoDispatch(dispatcher *action.Dispatcher) error {
 			break
 		}
 		if ok {
+
 			nodeExecLog := model.NodeExecLog{
 				Id:         utils.UUID(),
 				DispatchId: dispatcher.Id,
 				Ok:         dispatcher.Ok,
 				Out:        dispatcher.Out,
-				NodeId:     *curNodeId,
+				NodeId:     curNode.Id,
+				ChainId:    dispatcher.ChainId,
+				NodeName:   &curNode.Name,
 				CreateTime: time.Now(),
 			}
+
+			if sok {
+				nodeExecLog.ShortcutId = &shortcut.Id
+				nodeExecLog.ShortcutName = &shortcut.Name
+				nodeExecLog.ShortcutType = &shortcut.Type
+				nodeExecLog.ProbeId = &shortcut.ProbeId
+				nodeExecLog.Payload = &shortcut.Payload
+			}
+
 			e.Log.Db.Create(&nodeExecLog)
 		}
 	}

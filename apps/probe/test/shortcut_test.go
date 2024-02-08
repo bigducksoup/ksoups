@@ -1,7 +1,7 @@
 package test
 
 import (
-	"config-manager/probe/service/shortcut"
+	"apps/probe/service/shortcut"
 	"fmt"
 	"testing"
 )

@@ -1,10 +1,10 @@
 package vo
 
-import "config-manager/center/model"
+import "apps/center/model"
 
 type ChainInfo struct {
 	Chain model.Chain  `json:"chain"`
-	Nodes []*NodeVO    `json:"nodes"`
+	Nodes []NodeVO     `json:"nodes"`
 	Edges []model.Edge `json:"edges"`
 }
 
@@ -24,9 +24,9 @@ type NodeDetail struct {
 
 // DispatchStatus 调度情况汇总，包含调度日志，当前节点，成功节点，失败节点，前置节点
 type DispatchStatus struct {
-	DispatchLog *model.DispatchLog      `json:"dispatchLog"`
-	CurNode     *NodeDetail             `json:"curNode"`
-	SuccessThen *NodeDetail             `json:"successThen"`
-	FailThen    *NodeDetail             `json:"failThen"`
-	PreNodes    []*model.NodeExecDetail `json:"preNodes"`
+	DispatchLog *model.DispatchLog   `json:"dispatchLog"`
+	CurNode     *NodeDetail          `json:"curNode"`
+	SuccessThen *NodeDetail          `json:"successThen"`
+	FailThen    *NodeDetail          `json:"failThen"`
+	PreNodes    []*model.NodeExecLog `json:"preNodes"`
 }

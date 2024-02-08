@@ -1,9 +1,10 @@
 package common
 
 import (
+	"apps/common/message"
+	"apps/common/utils"
 	"bufio"
-	"config-manager/common/message"
-	"config-manager/common/utils"
+
 	"context"
 	"encoding/json"
 	"errors"

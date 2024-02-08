@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"config-manager/center/api/response"
-	"config-manager/center/api/session"
+	"apps/center/api/response"
+	"apps/center/api/session"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -14,6 +14,11 @@ var whiteList = map[string]any{
 func AuthMiddleWare() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
+
+		if ctx.RemoteIP() == "127.0.0.1" {
+			ctx.Next()
+			return
+		}
 
 		path := ctx.FullPath()
 

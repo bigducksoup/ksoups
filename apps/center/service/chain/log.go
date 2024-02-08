@@ -1,8 +1,8 @@
 package chain
 
 import (
-	"config-manager/center/action"
-	"config-manager/center/model"
+	"apps/center/action"
+	"apps/center/model"
 	"errors"
 	"gorm.io/gorm"
 	"time"
@@ -93,18 +93,19 @@ func (l *LogService) GetNodeExecLogs(dispatchId string) (nodeExecLogs []*model.N
 //	AND bd.shortcut_id = shortcuts.id
 //	AND ne.dispatch_id = '814570a6-5f38-459d-894e-5fac4c91ca82'
 //	ORDER BY ne.create_time DESC
-func (l *LogService) GetNodeExecDetail(dispatchId string) (nodeExecDetail []*model.NodeExecDetail, err error) {
+func (l *LogService) GetNodeExecDetail(dispatchId string) (nodeExecLog []*model.NodeExecLog, err error) {
 
-	err = l.Db.Table("node_exec_logs ne").
-		Select("ne.create_time,ne.ok,ne.out,nodes.name as 'node_name',shortcuts.name as 'shortcut_name',shortcuts.payload,shortcuts.type as 'shortcut_type',shortcuts.probe_id as 'probe_id'").
-		Joins("inner join nodes on ne.node_id = nodes.id").
-		Joins("left join shortcut_node_bindings bd on nodes.id = bd.node_id").
-		Joins("left join shortcuts on bd.shortcut_id = shortcuts.id").
-		Where("ne.dispatch_id = ?", dispatchId).
-		Order("ne.create_time desc").
-		Find(&nodeExecDetail).Error
+	//err = l.Db.Table("node_exec_logs ne").
+	//	Select("ne.create_time,ne.ok,ne.out,nodes.name as 'node_name',shortcuts.name as 'shortcut_name',shortcuts.payload,shortcuts.type as 'shortcut_type',shortcuts.probe_id as 'probe_id'").
+	//	Joins("inner join nodes on ne.node_id = nodes.id").
+	//	Joins("left join shortcut_node_bindings bd on nodes.id = bd.node_id").
+	//	Joins("left join shortcuts on bd.shortcut_id = shortcuts.id").
+	//	Where("ne.dispatch_id = ?", dispatchId).
+	//	Order("ne.create_time desc").
+	//	Find(&nodeExecDetail).Error
 
-	return nodeExecDetail, err
+	err = l.Db.Where("dispatch_id = ?", dispatchId).Order("create_time desc").Find(&nodeExecLog).Error
+	return nodeExecLog, err
 
 }
 

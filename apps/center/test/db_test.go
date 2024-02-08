@@ -1,10 +1,10 @@
 package test
 
 import (
-	"config-manager/center/db"
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/common/utils"
+	"apps/center/db"
+	"apps/center/global"
+	"apps/center/model"
+	"apps/common/utils"
 	"fmt"
 	"testing"
 	"time"

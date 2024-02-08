@@ -56,12 +56,19 @@ type DispatchLog struct {
 }
 
 type NodeExecLog struct {
-	Id         string    `gorm:"primaryKey" json:"id"`
-	DispatchId string    `json:"dispatchId"`
-	NodeId     string    `json:"nodeId"`
-	Ok         bool      `json:"ok"`
-	Out        string    `json:"out"`
-	CreateTime time.Time `json:"createTime"`
+	Id           string    `gorm:"primaryKey" json:"id"`
+	ChainId      string    `json:"chainId"`
+	DispatchId   string    `json:"dispatchId"`
+	NodeId       string    `json:"nodeId"`
+	NodeName     *string   `json:"nodeName"`
+	ShortcutId   *string   `json:"shortcutId"`
+	ShortcutName *string   `json:"shortcutName"`
+	ProbeId      *string   `json:"probeId"`
+	ShortcutType *int      `json:"shortcutType"`
+	Payload      *string   `json:"payload"`
+	Ok           bool      `json:"ok"`
+	Out          string    `json:"out"`
+	CreateTime   time.Time `json:"createTime"`
 }
 
 type NodeExecDetail struct {

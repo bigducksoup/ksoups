@@ -1,7 +1,7 @@
 package global
 
 import (
-	"config-manager/center/config"
+	"apps/center/config"
 	"gorm.io/gorm"
 	"log"
 )

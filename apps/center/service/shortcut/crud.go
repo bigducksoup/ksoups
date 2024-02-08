@@ -1,11 +1,11 @@
 package shortcut
 
 import (
-	"config-manager/center/model"
-	"config-manager/center/server"
-	"config-manager/common/message"
-	"config-manager/common/message/data"
-	"config-manager/common/utils"
+	"apps/center/model"
+	"apps/center/server"
+	"apps/common/message"
+	"apps/common/message/data"
+	"apps/common/utils"
 	"encoding/json"
 
 	"gorm.io/gorm"
@@ -66,13 +66,6 @@ func (c *CRUDService) ShortcutGroup() (map[string][]model.Shortcut, error) {
 }
 
 func (c *CRUDService) RemoveShortcut(id string) error {
-
-	sc := model.Shortcut{}
-	c.Db.Where("id = ?", id).Select("type").First(&sc)
-	if sc.Type == model.SCRIPT {
-		c.Db.Where("id = ?", id).Select("payload").First(&sc)
-		// TODO 删除脚本文件
-	}
 
 	tx := c.Db.Begin()
 	tx.Where("id = ?", id).Delete(&model.Shortcut{})

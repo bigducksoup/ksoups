@@ -1,12 +1,13 @@
 package handler
 
 import (
-	"config-manager/center/api/param"
-	"config-manager/center/api/response"
-	"config-manager/center/model"
-	"config-manager/center/service"
-	chainService "config-manager/center/service/chain"
-	"config-manager/common/utils"
+	"apps/center/api/param"
+	"apps/center/api/response"
+	"apps/center/model"
+	"apps/center/service"
+	chainService "apps/center/service/chain"
+	"apps/common/utils"
+
 	"net/http"
 	"time"
 

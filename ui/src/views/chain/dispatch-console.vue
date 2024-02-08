@@ -423,7 +423,6 @@ defineExpose({
         </n-button>
         <n-button @click="()=>{
           NewDispatch();
-          SameTimeAnimate('animate__zoomIn','animate__fast');
           childAnim('animate__zoomIn','animate__fast');
         }" circle size="large" class="mb-5 bg-green-500">
           <n-icon size="30">

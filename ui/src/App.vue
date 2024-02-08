@@ -1,7 +1,7 @@
 <script setup>
 import {darkTheme, NConfigProvider, NMessageProvider, NNotificationProvider} from 'naive-ui'
 import {onMounted} from 'vue';
-import {baseUrl} from './state'
+import {baseUrl,baseHost} from './state'
 import {useRoute, useRouter} from 'vue-router'
 
 const router = useRouter()
@@ -9,7 +9,10 @@ const router = useRouter()
 onMounted(() => {
 
   if (import.meta.env.DEV === false) {
-    baseUrl.value = window.location.href
+
+    const url = new URL(window.location.href)
+    baseUrl.value = url.origin + '/'
+    baseHost.value = url.host
   }
 
   let sid = window.localStorage.getItem('sid')
@@ -34,6 +37,8 @@ onMounted(() => {
     if (json.code !== 200) {
       router.push('/login')
     }
+  }).catch((e) => {
+    router.push('/login')
   })
 
 

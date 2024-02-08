@@ -1,7 +1,7 @@
 package session
 
 import (
-	"config-manager/common/utils"
+	"apps/common/utils"
 	"sync"
 )
 

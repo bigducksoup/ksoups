@@ -1,8 +1,9 @@
 package test
 
 import (
+	"apps/center/ssh"
 	"bufio"
-	"config-manager/center/ssh"
+
 	"fmt"
 	"io"
 	"testing"

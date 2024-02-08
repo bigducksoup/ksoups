@@ -1,8 +1,8 @@
 package shortcut
 
 import (
-	"config-manager/center/model"
-	"config-manager/common/message/data"
+	"apps/center/model"
+	"apps/common/message/data"
 	"context"
 	"os/exec"
 	"strings"
@@ -19,7 +19,7 @@ func executeCmdWithTimeout(cmd string, timeout time.Duration) (string, error) {
 
 	command := exec.CommandContext(ctx, cmdSplits[0], cmdSplits[1:]...)
 
-	bytes, err := command.Output()
+	bytes, err := command.CombinedOutput()
 
 	if err != nil {
 		if ctx.Err() != nil {

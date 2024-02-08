@@ -1,11 +1,12 @@
 package ws
 
 import (
+	"apps/center/api/session"
+	"apps/center/global"
+	"apps/center/model"
+	"apps/center/ssh"
 	"bufio"
-	"config-manager/center/api/session"
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/center/ssh"
+
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"config-manager/common/message"
-	"config-manager/probe/common"
+	"apps/common/message"
+	"apps/probe/common"
 	"errors"
 	"log"
 )

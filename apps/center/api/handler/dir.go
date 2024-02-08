@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"config-manager/center/api/param"
-	"config-manager/center/api/response"
-	"config-manager/center/server"
-	"config-manager/common/message"
-	"config-manager/common/message/data"
+	"apps/center/api/param"
+	"apps/center/api/response"
+	"apps/center/server"
+	"apps/common/message"
+	"apps/common/message/data"
 	"encoding/json"
 	"net/http"
 

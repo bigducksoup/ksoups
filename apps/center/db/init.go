@@ -1,10 +1,9 @@
 package db
 
 import (
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/common/utils"
-
+	"apps/center/global"
+	"apps/center/model"
+	"apps/common/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

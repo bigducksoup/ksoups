@@ -1,8 +1,8 @@
 package server
 
 import (
-	"config-manager/common/message"
-	"config-manager/common/utils"
+	"apps/common/message"
+	"apps/common/utils"
 	"encoding/json"
 	"errors"
 	"log"

@@ -1,10 +1,11 @@
 package server
 
 import (
+	"apps/center/global"
+	"apps/center/model"
+	"apps/common/message"
 	"bufio"
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/common/message"
+
 	"encoding/json"
 	"errors"
 	"io"

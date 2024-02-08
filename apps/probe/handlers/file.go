@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	. "config-manager/common/message/data"
-	fileservice "config-manager/probe/service/fs"
+	. "apps/common/message/data"
+	fileservice "apps/probe/service/fs"
 	"encoding/json"
 )
 
@@ -75,4 +75,27 @@ func handleCreateFile(data []byte) ([]byte, error) {
 
 	return bytes, nil
 
+}
+
+func handleDeleteFile(data []byte) ([]byte, error) {
+
+	fd, err := readData[FileDelete](data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	fileDeteteResponse, err := fileservice.FileDelete(fd)
+
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := json.Marshal(fileDeteteResponse)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
 }

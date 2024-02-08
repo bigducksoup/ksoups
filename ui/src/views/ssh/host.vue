@@ -19,8 +19,12 @@ import SSHInfoItem from "../../components/ssh/SSHInfoItem.vue";
 import {useRouter} from "vue-router";
 import {useForm} from "../../hooks/common";
 
+
+
 const router = useRouter();
 const message = useMessage();
+
+const root = ref(null);
 
 const lastGroupIds = ref([]);
 const curGroupId = ref("root");
@@ -36,9 +40,9 @@ const onClickItem = (item) => {
 
   if (item.type === 1) {
     const {href} = router.resolve({
-      name: 'index',
+      name: 'terminal',
       query: {
-        sshId: item.payload.id,
+        sshId: item.payload.id
       },
     });
     // open and set title
@@ -160,7 +164,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-[#121417] w-full h-full text-white p-2 overflow-x-scroll">
+  <div  class="bg-[#121417] w-full h-full text-white p-2 overflow-x-scroll">
     <div class="op-bar w-full h-10 flex items-center pl-2 mb-2 gap-2">
       <n-button circle @click="back">
         <n-icon size="20">
@@ -182,7 +186,7 @@ onMounted(() => {
       </n-button>
     </div>
 
-    <div class="w-full h-fit border-[1px] border-gray-700">
+    <div ref="root" class="w-full h-fit border-[1px] border-gray-700">
       <div v-for="item in groupInfo" @click="onClickItem(item)">
         <group-item v-if="item.type === 0" :GItem="item.payload" :group-tree="groupTree"
                     @onDelete="()=>{

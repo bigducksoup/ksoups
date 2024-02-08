@@ -20,7 +20,7 @@ const routes = [
                 path: ':chainId',
                 name: 'chain',
                 component: () => import('../views/chain/detail.vue')
-            }
+            },
         ]
 
     },
@@ -75,7 +75,7 @@ const routes = [
 
 
 const router = createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes
 })
 

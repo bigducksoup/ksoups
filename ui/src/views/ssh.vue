@@ -52,7 +52,7 @@ const leave = () => {
 
 <template>
 
-  <div ref="root" id="root-term" class="w-full h-full">
+  <div ref="root" id="root-term" class="w-full h-full bg-[#121417]">
     <div ref="header" class="flex items-center pl-2">
       <button @click="leave" class="hover:underline hover:text-white">
         返回首页

@@ -1,14 +1,12 @@
 package fileservice
 
 import (
-	"config-manager/common/message/data"
-	"fmt"
+	"apps/common/message/data"
+	"apps/probe/function"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strconv"
-	"syscall"
 )
 
 // DirRead reads dir info by accepting a path
@@ -40,30 +38,16 @@ func DirRead(dr data.DirRead) (data.DirResponse, error) {
 			return data.DirResponse{}, err
 		}
 
-		// user id
-		uid := info.Sys().(*syscall.Stat_t).Uid
+		uid, fileUserName, err := function.FindOwner(info)
 
-		//user
-		var fileUserName string
-		fileUser, err := user.LookupId(fmt.Sprintf("%d", uid))
 		if err != nil {
 			log.Printf("look up file userId failed,file:%s,uid:%d,err:%s", info.Name(), uid, err.Error())
-			fileUserName = "unknown"
-		} else {
-			fileUserName = fileUser.Name
 		}
 
-		// group id
-		gid := info.Sys().(*syscall.Stat_t).Gid
+		gid, fileGroupName, err := function.FindGroup(info)
 
-		//group
-		var fileGroupName string
-		fileGroup, err := user.LookupGroupId(fmt.Sprintf("%d", gid))
 		if err != nil {
 			log.Printf("look up file user group Id failed,gid:%d,err:%s", gid, err.Error())
-			fileGroupName = "unknown"
-		} else {
-			fileGroupName = fileGroup.Name
 		}
 
 		absPath := filepath.Join(dr.Path, info.Name())

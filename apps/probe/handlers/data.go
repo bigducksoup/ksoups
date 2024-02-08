@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"config-manager/common/message"
+	"apps/common/message"
 	"encoding/json"
 )
 
@@ -13,6 +13,7 @@ var DataHandlePolicy = map[message.DataType]func(data []byte) ([]byte, error){
 	message.RUN_SHORTCUT:  handleRunSC,
 	message.CREATE_DIR:    handleCreateDir,
 	message.CREATE_SCRIPT: handleCreateScript,
+	message.DELETEFILE:    handleDeleteFile,
 }
 
 func readData[T any](data []byte) (T, error) {

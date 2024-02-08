@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"config-manager/center/api/param"
-	"config-manager/center/api/response"
-	"config-manager/center/api/vo"
-	"config-manager/center/global"
-	"config-manager/center/model"
-	"config-manager/center/service"
-	"config-manager/common/utils"
+	"apps/center/api/param"
+	"apps/center/api/response"
+	"apps/center/api/vo"
+	"apps/center/global"
+	"apps/center/model"
+	"apps/center/service"
+	"apps/common/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

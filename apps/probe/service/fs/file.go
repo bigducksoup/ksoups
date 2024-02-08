@@ -1,9 +1,9 @@
 package fileservice
 
 import (
-	"config-manager/common/message/data"
-	"config-manager/probe/common"
-	"config-manager/probe/function"
+	"apps/common/message/data"
+	"apps/probe/common"
+	"apps/probe/function"
 	"log"
 	"os"
 	"strconv"
@@ -112,6 +112,20 @@ func FileCreate(fc data.FileCreate) (data.FileCreateResponse, error) {
 		Permission: fc.Permission,
 	}, nil
 
+}
+
+func FileDelete(fd data.FileDelete) (data.FileDeleteResponse, error) {
+
+	err := function.DeleteFile(fd.Path)
+
+	if err != nil {
+		return data.FileDeleteResponse{}, err
+	}
+
+	return data.FileDeleteResponse{
+		Ok:   true,
+		Path: fd.Path,
+	}, nil
 }
 
 var fileCache = common.NewLRUCache[*common.File](10)

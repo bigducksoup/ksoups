@@ -7,6 +7,7 @@ import {onMounted, ref} from "vue";
 import { useMessage } from 'naive-ui';
 
 const message = useMessage()
+import {baseHost} from "../../state/index.js";
 
 const props = defineProps(['sshId','width','height'])
 const termEle = ref(null)
@@ -45,7 +46,8 @@ onMounted(()=>{
     fitAddon.fit()
   })
 
-  let ws = new WebSocket("ws://localhost:8080/ws/ssh?sshInfoId="+props.sshId + "&sid=" + sid);
+
+  let ws = new WebSocket(`ws://${baseHost.value}/ws/ssh?sshInfoId=${props.sshId}&sid=${sid}`)
   ws.binaryType = "arraybuffer";
   
   ws.onmessage = async (e) => {

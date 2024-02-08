@@ -1,11 +1,11 @@
 package connect
 
 import (
-	"config-manager/common/message"
-	"config-manager/common/utils"
-	"config-manager/probe/common"
-	"config-manager/probe/config"
-	"config-manager/probe/handlers"
+	"apps/common/message"
+	"apps/common/utils"
+	"apps/probe/common"
+	"apps/probe/config"
+	"apps/probe/handlers"
 	"context"
 	"errors"
 	"io"

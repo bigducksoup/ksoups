@@ -1,8 +1,8 @@
 package action
 
 import (
-	"config-manager/center/model"
-	"config-manager/common/utils"
+	"apps/center/model"
+	"apps/common/utils"
 	"errors"
 	"time"
 )
@@ -130,6 +130,10 @@ func (d *Dispatcher) CurNodeId() (*string, bool) {
 		return nil, false
 	}
 	return &d.CurNode.Id, true
+}
+
+func (d *Dispatcher) GetCurNode() (*model.Node, bool) {
+	return d.CurNode, d.CurNode != nil
 }
 
 func (d *Dispatcher) SuccessThenNode() (*model.Node, bool) {

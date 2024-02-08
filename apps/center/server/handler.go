@@ -1,7 +1,7 @@
 package server
 
 import (
-	"config-manager/common/message"
+	"apps/common/message"
 	"log"
 	"time"
 )

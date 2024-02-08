@@ -1,9 +1,9 @@
 package main
 
 import (
-	"config-manager/probe/config"
-	"config-manager/probe/connect"
-	fileservice "config-manager/probe/service/fs"
+	"apps/probe/config"
+	"apps/probe/connect"
+	fileservice "apps/probe/service/fs"
 	"context"
 	"flag"
 	"log"

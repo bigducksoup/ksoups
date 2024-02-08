@@ -56,7 +56,6 @@ const runShortcut = async (shortcutId)=>{
  * @returns {Promise<any>}
  */
 const deleteShortcut = async (shortcutId)=>{
-    const message = useMessage()
     let sid = window.localStorage.getItem('sid')
     let res =  await fetch(baseUrl.value + "api/shortcut/delete?shortcutId=" + shortcutId , {
         method:"DELETE",
@@ -66,7 +65,6 @@ const deleteShortcut = async (shortcutId)=>{
     })
     let json = await res.json()
     if (json['code'] !== 200){
-        message.error(json['msg'])
         return
     }
     return json

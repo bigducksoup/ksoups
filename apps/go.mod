@@ -1,4 +1,4 @@
-module config-manager
+module apps
 
 go 1.21
 

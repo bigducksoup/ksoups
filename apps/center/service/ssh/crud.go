@@ -1,8 +1,8 @@
 package ssh
 
 import (
-	"config-manager/center/api/vo"
-	"config-manager/center/model"
+	"apps/center/api/vo"
+	"apps/center/model"
 	"gorm.io/gorm"
 )
 

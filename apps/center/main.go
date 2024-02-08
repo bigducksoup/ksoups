@@ -1,12 +1,12 @@
 package main
 
 import (
-	"config-manager/center/api"
-	"config-manager/center/config"
-	"config-manager/center/db"
-	"config-manager/center/global"
-	"config-manager/center/server"
-	"config-manager/center/service"
+	"apps/center/api"
+	"apps/center/config"
+	"apps/center/db"
+	"apps/center/global"
+	"apps/center/server"
+	"apps/center/service"
 	"flag"
 )
 
@@ -21,6 +21,7 @@ func main() {
 		panic(err)
 	}
 	global.Conf = *conf
+
 	hp := global.Conf.WebApi.Port
 	sp := global.Conf.Center.Port
 
