@@ -53,15 +53,15 @@ func FileRead(c *gin.Context) {
 
 func FileModify(c *gin.Context) {
 
-	param := param.ModifyFileParams{}
+	p := param.ModifyFileParams{}
 
-	err := c.ShouldBindJSON(&param)
+	err := c.ShouldBindJSON(&p)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
 	}
 
-	probe, err := server.Ctx.GetProbe(param.ProbeId)
+	probe, err := server.Ctx.GetProbe(p.ProbeId)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -69,11 +69,11 @@ func FileModify(c *gin.Context) {
 	}
 
 	fileMReq := data.FileModify{
-		Path:    param.Path,
+		Path:    p.Path,
 		Changes: []data.Change{},
 	}
 
-	for _, v := range param.Changes {
+	for _, v := range p.Changes {
 		fileMReq.Changes = append(fileMReq.Changes, data.Change{
 			Count:     v.Count,
 			Operation: v.Operation,

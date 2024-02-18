@@ -40,3 +40,49 @@ export const genCommonNode = (node,x,y) => {
 export const genShortcutNode = (shortcut,x,y) => {
     return new MyNode(shortcut.id, shortcut.name, 'shortcutRect', x, y, [100, 100]);
 }
+
+/**
+ *
+ * @param {Object} originData
+ * @param {Array<Object>} originData.cells
+ * @param {string} chainId
+ */
+export const processGraphDataToChainData = (originData,chainId) => {
+
+    const graphData = originData['cells']
+
+    const result = {
+        chainId:chainId,
+        nodes:[],
+        edges:[],
+        originData: JSON.stringify(graphData)
+    }
+
+
+    const processNodeData = (nodeData) => {
+        const shortcut = nodeData.data.proto
+        result.nodes.push({
+            id:nodeData.id,
+            name: shortcut.name,
+            description: shortcut.description,
+            shortcut:shortcut
+        })
+    }
+
+    const processEdgeData = (edgeData) => {
+
+        result.edges.push({
+            id: edgeData.id,
+            sourceId: edgeData.source.cell,
+            targetId: edgeData.target.cell,
+            type: edgeData.source.port === 'SuccessOut'? 0 : edgeData.source.port === 'FailOut'? 1 : -1
+        })
+
+    }
+
+    graphData.forEach(item => item.shape === 'dag-edge'? processEdgeData(item) : processNodeData(item))
+
+
+    return result
+
+}

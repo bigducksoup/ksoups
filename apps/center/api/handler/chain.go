@@ -356,3 +356,23 @@ func ChainExecLogHistory(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success(history))
 
 }
+
+func ChainLoadFromAllData(c *gin.Context) {
+
+	p := param.ChainAllDataParams{}
+	err := c.ShouldBindJSON(&p)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	err = service.ChainCRUD.LoadFromAllData(&p)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(true))
+}

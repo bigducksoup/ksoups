@@ -8,6 +8,7 @@ import { useChainInfo, useNodeOperation } from "../../hooks/chain.js";
 import { useShortcutGroup } from "../../hooks/shortcut.js";
 import DispatchConsole from "./dispatch-console.vue";
 import NodeManage from "./node-manage.vue";
+import orchestration from "./orchestration.vue";
 
 const message = useMessage();
 const route = useRoute();
@@ -26,7 +27,6 @@ const dispatch = ref(null);
 defineExpose({
   dispatch,
 });
-
 
 // TODO 适当时机更新chainDetail
 const { chainDetail, nodes, getChainData } = useChainInfo(route.params.chainId);
@@ -85,15 +85,23 @@ const showNodeManage = () => {
 </script>
 
 <template>
-  <div class="p-2 pb-16 bg-black h-screen overflow-hidden relative">
-    <div ref="ctl" class="h-screen w-full p-3 z-10">
+  <div class="h-screen overflow-hidden relative">
+    <div ref="ctl" class="h-screen w-full z-10">
       <dispatch-console
         ref="dispatch"
         :show-nodes="showNodeManage"
         :chain-id="route.params.chainId"
-      ></dispatch-console>
+      >
+      </dispatch-console>
+
     </div>
   </div>
+
+
+
+  
+
+
 
   <Transition name="bounce">
 

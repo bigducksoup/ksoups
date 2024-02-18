@@ -1,14 +1,22 @@
 <template>
 
-  <div class="w-full bg-[#05253A]  flex items-center justify-end p-10 h-screen">
+  <div class="w-full bg-[#05253A]  flex items-center p-10 h-screen">
 
+    <div class="ml-auto mr-auto text-[200px] justify-center items-center flex flex-col">
+      <span>
+        KS<span class="text-green-500">O</span>U<span class="text-green-500">PS</span>
+      </span>
+      <span class="text-base text-white">
+        一个小巧的运维中心？
+      </span>
+    </div>
 
-    <div class=" w-full sm:w-[400px] h-full bg-[#0C3451] rounded-2xl shadow flex flex-col p-8 text-white">
-      <div class="w-full h-10 text-base mb-5">
-        轻量级运维中心
+    <div class=" w-full sm:w-[400px] h-full bg-[#0C3451] rounded-2xl shadow flex flex-col p-8 text-white ml-auto">
+      <div class="w-full h-10 text-3xl mb-5">
+        Ksoups
       </div>
       <div class="w-full h-12 text-2xl">
-        简洁，轻快
+        简洁，轻快，集中管理
         <div>
           <span class="text-sm text-gray-500">当前只支持Linux, MacOS</span>
         </div>

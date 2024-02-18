@@ -159,7 +159,7 @@ onMounted(() => {
     return res.json()
   }).then(json => {
 
-    for (let item of json) {
+    for (let item of json['data']) {
       nodeMap.value[item['id']] = item
       nodeOptions.value.push({
         'label': () => renderNode(item),
@@ -167,7 +167,7 @@ onMounted(() => {
       })
     }
 
-    let defaultNode = json[0]
+    let defaultNode = json['data'][0]
     chooseNode(defaultNode['id'])
   })
 })

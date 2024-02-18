@@ -19,7 +19,7 @@ const routes = [
             {
                 path: ':chainId',
                 name: 'chain',
-                component: () => import('../views/chain/detail.vue')
+                component: () => import('../views/chain/orchestration.vue')
             },
         ]
 

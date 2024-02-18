@@ -1,6 +1,7 @@
 package chain
 
 import (
+	"apps/center/api/param"
 	"apps/center/api/vo"
 	"apps/center/model"
 	"apps/common/utils"
@@ -294,4 +295,79 @@ func (c *CRUDService) DeleteChain(ChainId string) error {
 	}
 
 	return err
+}
+
+func (c *CRUDService) LoadFromAllData(p *param.ChainAllDataParams) error {
+
+	var newNodes []model.Node
+	var newEdges []model.Edge
+	var newBindings []model.ShortcutNodeBinding
+
+	for _, node := range p.Nodes {
+		newNodes = append(newNodes, model.Node{
+			Id:          node.ID,
+			Name:        node.Name,
+			ChainId:     p.ChainID,
+			Description: node.Description,
+			//TODO set a root node for dispatch
+			Root: false,
+		})
+
+		newBindings = append(newBindings, model.ShortcutNodeBinding{
+			Id:         utils.UUID(),
+			NodeId:     node.ID,
+			ShortcutId: node.Shortcut.ID,
+		})
+
+	}
+
+	for _, edge := range p.Edges {
+		newEdges = append(newEdges, model.Edge{
+			Id:         edge.ID,
+			SourceId:   edge.SourceID,
+			TargetId:   edge.TargetID,
+			Type:       edge.Type,
+			CreateTime: time.Now(),
+			ChainId:    p.ChainID,
+		})
+	}
+
+	// update
+	err := c.Db.Transaction(func(tx *gorm.DB) error {
+		// delete origin info
+		err := tx.Delete(&model.Edge{}, "chain_id = ?", p.ChainID).Error
+		if err != nil {
+			return err
+		}
+		err = tx.Delete(&model.ShortcutNodeBinding{}, "node_id in (select id from nodes where chain_id = ?)", p.ChainID).Error
+		if err != nil {
+			return err
+		}
+		err = tx.Delete(&model.Node{}, "chain_id = ?", p.ChainID).Error
+		if err != nil {
+			return err
+		}
+
+		// load new info
+		tx.Model(&model.Chain{}).Where("id = ?", p.ChainID).Update("origin_data", p.OriginData)
+
+		err = tx.Create(&newNodes).Error
+		if err != nil {
+			return err
+		}
+		err = tx.Create(&newEdges).Error
+		if err != nil {
+			return err
+		}
+		err = tx.Create(&newBindings).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

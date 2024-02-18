@@ -94,6 +94,8 @@ func SetUpRouters(engine *gin.Engine) {
 		chainGroup := apiGroup.Group("/chain")
 		{
 
+			chainGroup.POST("/load", handler.ChainLoadFromAllData)
+
 			// 链式指令信息
 			chainGroup.GET("/info", handler.ChainInfo)
 

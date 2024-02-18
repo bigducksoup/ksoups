@@ -7,6 +7,7 @@ type Chain struct {
 	Name        string    `json:"name"`
 	CreateTime  time.Time `json:"createTime"`
 	Description string    `json:"description"`
+	OriginData  string    `json:"originData"`
 }
 
 // Edge type

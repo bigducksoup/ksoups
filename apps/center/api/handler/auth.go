@@ -7,11 +7,11 @@ import (
 	"apps/center/db"
 	"apps/center/global"
 	"github.com/gin-gonic/gin"
-	"go/types"
 	"net/http"
 	"time"
 )
 
+// Login 登录
 func Login(c *gin.Context) {
 
 	loginForm := param.LoginForm{}
@@ -48,9 +48,10 @@ func Login(c *gin.Context) {
 	}
 
 	if password != loginForm.PassWord {
-		c.JSON(http.StatusOK, response.Resp[types.Nil]{
+		c.JSON(http.StatusOK, response.Resp[any]{
 			Code: 403,
 			Msg:  "账号或密码错误",
+			Data: nil,
 		})
 		return
 	}
