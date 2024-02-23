@@ -5,7 +5,7 @@ import {NIcon} from 'naive-ui'
 
 const state = ref(0)
 
-const getNode = inject('getNode',)
+const getNode = inject('getNode')
 const getGraph = inject('getGraph')
 
 const node = ref(null)
@@ -14,7 +14,8 @@ const graph = ref(null)
 const data = ref({
   proto: {
     name: 'loading'
-  }
+  },
+  root: false
 })
 
 const onClickClose = () => {
@@ -29,11 +30,25 @@ onMounted(() => {
   node.value = getNode()
   graph.value = getGraph()
   data.value = node.value.getData()
+
+  node.value.on('change:data', ({current}) => {
+    data.value = current
+
+    if (current.nodeExecResult){
+      state.value = current.nodeExecResult.ok ? 1 : 2
+    }
+  })
+
 });
 </script>
 
 <template>
-  <div @click="onClickNode" class="w-36 h-14 bg-blue-500 rounded flex items-center justify-center overflow-hidden">
+  <div @click="onClickNode" class="w-36 h-14 bg-blue-500 rounded flex items-center justify-center relative">
+
+    <div v-if="data.root" class="absolute right-1 bottom-1 text-black">
+        ROOT
+    </div>
+
     <div :class="`state-${state}`">
 
     </div>

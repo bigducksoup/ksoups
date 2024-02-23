@@ -76,7 +76,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="w-screen min-h-screen bg-black flex flex-col">
+  <div class="w-screen min-h-0 h-screen overflow-visible bg-black flex flex-col">
     <div class="header" :style="headerStyle">
       <div class="w-1/3 h-full items-center flex pl-5">
         <span
@@ -96,9 +96,11 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="body text-white w-full grow flex bg-[#13151D]">
-      <n-layout has-sider>
+    <div class="grow body overflow-hidden min-h-0 h-0 text-white flex bg-[#13151D]">
+      <n-layout has-sider class="min-h-0 w-full h-[830px] overflow-hidden">
         <n-layout-sider
+            class="h-full min-h-0"
+            :native-scrollbar="false"
             bordered
             collapse-mode="width"
             :collapsed-width="1"
@@ -119,11 +121,9 @@ onMounted(() => {
           >
           </n-menu>
         </n-layout-sider>
-        <n-layout-content content-style="padding: 14px">
+        <n-layout-content class="overflow-auto h-full" content-style="padding: 14px;height:100%" :native-scrollbar="false">
           <RouterView v-slot="{ Component }">
-            <keep-alive>
               <component ref="detail" :key="$route.params.chainId" :is="Component"/>
-            </keep-alive>
           </RouterView>
         </n-layout-content>
       </n-layout>

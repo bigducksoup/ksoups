@@ -376,3 +376,122 @@ func ChainLoadFromAllData(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.Success(true))
 }
+
+func NewExecMachine(c *gin.Context) {
+
+	chainId, ok := c.GetQuery("chainId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	machine, err := service.ChainEXECV2.CreateMachine(chainId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+	var dispatch model.DispatchLog
+
+	err = service.ChainCRUD.Db.Where("id = ?", machine.Id).
+		Select("id", "chain_id", "create_time", "status", "done").
+		Find(&dispatch).Error
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(dispatch))
+}
+
+func MachineExecAll(c *gin.Context) {
+
+	machineId, ok := c.GetQuery("machineId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	_, err := service.ChainEXECV2.MachineDoNextAll(machineId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	logs, err := service.ChainLOG.GetNodeExecLogs(machineId)
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(logs))
+
+}
+
+func MachineExecOne(c *gin.Context) {
+	machineId, ok := c.GetQuery("machineId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	_, err := service.ChainEXECV2.MachineDoNextOne(machineId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	logs, err := service.ChainLOG.GetNodeExecLogs(machineId)
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(logs))
+}
+
+func ExecList(c *gin.Context) {
+
+	chainId, ok := c.GetQuery("chainId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	infoList, err := service.ChainINFO.ExecInfoList(chainId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(infoList))
+
+}
+
+func ExecDetail(c *gin.Context) {
+
+	dispatchId, ok := c.GetQuery("dispatchId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	detail, err := service.ChainINFO.ExecInfoDetail(dispatchId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(detail))
+
+}

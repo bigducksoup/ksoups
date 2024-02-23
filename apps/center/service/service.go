@@ -5,6 +5,7 @@ import (
 	"apps/center/global"
 	"apps/center/server"
 	"apps/center/service/chain"
+	v2 "apps/center/service/chain/v2"
 	"apps/center/service/fs"
 	"apps/center/service/shortcut"
 	"apps/center/service/ssh"
@@ -16,9 +17,12 @@ var (
 )
 
 var (
-	ChainCRUD chain.CRUDService
-	ChainEXEC chain.ExecService
-	ChainLOG  chain.LogService
+	ChainCRUD   chain.CRUDService
+	ChainEXEC   chain.ExecService
+	ChainEXECV2 v2.ExecService
+	ChainLOG    chain.LogService
+	ChainINFO   v2.InfoService
+	Graph       v2.GraphService
 )
 
 var (
@@ -30,7 +34,12 @@ var (
 )
 
 func Init() {
-	ShortcutCRUD = shortcut.CRUDService{Db: global.DB}
+
+	Graph = v2.GraphService{
+		Db: global.DB,
+	}
+
+	ShortcutCRUD = shortcut.CRUDService{Db: global.DB, GraphService: &Graph}
 	ShortcutRUN = shortcut.RUNService{
 		Runner: scrun.Runner{},
 		Db:     global.DB,
@@ -40,6 +49,14 @@ func Init() {
 	ChainEXEC = chain.ExecService{
 		ChainCRUD: &ChainCRUD,
 		Log:       &ChainLOG,
+	}
+
+	ChainEXECV2 = v2.ExecService{
+		CRUDService: &ChainCRUD,
+	}
+
+	ChainINFO = v2.InfoService{
+		Db: global.DB,
 	}
 
 	SSHCRUD = ssh.CRUDService{Db: global.DB}

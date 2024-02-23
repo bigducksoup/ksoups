@@ -61,11 +61,13 @@ export const processGraphDataToChainData = (originData,chainId) => {
 
     const processNodeData = (nodeData) => {
         const shortcut = nodeData.data.proto
+        const root = nodeData.data.root ?? false
         result.nodes.push({
             id:nodeData.id,
             name: shortcut.name,
             description: shortcut.description,
-            shortcut:shortcut
+            shortcut:shortcut,
+            root:root
         })
     }
 

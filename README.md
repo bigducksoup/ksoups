@@ -1,3 +1,7 @@
+
+
+![logo](imgs/logo.png)
+
 # ksoups
 
 轻量级，中心化的多服务器运维平台。ksoups使用golang，vue 开发，支持Linux，MacOS。部署即可用。
@@ -64,9 +68,13 @@ probe 主动注册到中心节点，并开启断线重连机制，探针为无�
 
 ## API
 
-完善中。。。。
+整理中。。。。
 
 
+
+## WARN
+
+项目处于开发阶段，谨慎使用
 
 
 
@@ -76,7 +84,7 @@ probe 主动注册到中心节点，并开启断线重连机制，探针为无�
 
 #### 登录
 
-![login](imgs/login.png)
+![login](imgs/login.jpeg)
 
 
 
@@ -100,7 +108,7 @@ probe 主动注册到中心节点，并开启断线重连机制，探针为无�
 
 #### 指令调度
 
-![login](imgs/dispatch.png)
+![login](imgs/dispatch.jpeg)
 
 
 

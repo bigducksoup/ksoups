@@ -6,7 +6,6 @@ import (
 	"apps/center/model"
 	"apps/center/ssh"
 	"bufio"
-
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -38,12 +37,16 @@ func HandleWS(c *gin.Context) {
 		return
 	}
 
-	//检查是否存在对应 session
-	_, ok = session.GetSession(sid)
+	ip := c.RemoteIP()
 
-	if !ok {
-		c.Status(http.StatusForbidden)
-		return
+	if ip != "127.0.0.1" {
+		//检查是否存在对应 session
+		_, ok = session.GetSession(sid)
+
+		if !ok {
+			c.Status(http.StatusForbidden)
+			return
+		}
 	}
 
 	app := c.Param("app")

@@ -1,26 +1,29 @@
 <script setup>
 import { NButton, NIcon } from "naive-ui";
 import { Remove,Add,Play,ReturnUpForward } from "@vicons/ionicons5";
+
+const emits = defineEmits(['onClickBtn'])
+
 </script>
 
 <template>
   <div class="option-bar">
-    <n-button circle size="large" color="red" class="bg-red-400 hover:after:content-['终止调度'] after:text-red-500 tip">
+    <n-button @click="() => emits('onClickBtn','remove')" circle size="large" color="red" class="bg-red-400 hover:after:content-['终止调度'] after:text-red-500 tip">
       <n-icon size="30">
         <Remove />
       </n-icon>
     </n-button>
-    <n-button circle size="large" class="hover:after:content-['新建调度'] tip">
+    <n-button @click="() => emits('onClickBtn','add')" circle size="large" class="hover:after:content-['新建调度'] tip">
       <n-icon size="30">
         <Add />
       </n-icon>
     </n-button>
-    <n-button circle size="large" class="pl-1 hover:after:content-['执行全部'] tip">
+    <n-button @click="() => emits('onClickBtn','nextAll')" circle size="large" class="pl-1 hover:after:content-['执行全部'] tip">
       <n-icon size="30">
         <Play />
       </n-icon>
     </n-button>
-    <n-button  circle size="large" class="hover:after:content-['下一步'] tip">
+    <n-button @click="() => emits('onClickBtn','next')" circle size="large" class="hover:after:content-['下一步'] tip">
       <n-icon size="30">
         <ReturnUpForward />
       </n-icon>

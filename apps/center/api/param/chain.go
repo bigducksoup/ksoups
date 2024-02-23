@@ -54,6 +54,7 @@ type Node struct {
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Shortcut    Shortcut `json:"shortcut"`
+	Root        bool     `json:"root"`
 }
 
 type Shortcut struct {

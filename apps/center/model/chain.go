@@ -37,12 +37,14 @@ type ShortcutNodeBinding struct {
 	Id         string `gorm:"primaryKey"`
 	NodeId     string `json:"nodeId"`
 	ShortcutId string `json:"shortcutId"`
+	ChainId    string `json:"chainId"`
 }
 
 type DispatchStatus int8
 
 const (
-	DispatchStatusRunning DispatchStatus = iota
+	DispatchStatusReady DispatchStatus = iota
+	DispatchStatusRunning
 	DispatchStatusDone
 	DispatchStatusFailed
 	DispatchStatusAborted
@@ -54,6 +56,7 @@ type DispatchLog struct {
 	CreateTime time.Time      `json:"createTime"`
 	Status     DispatchStatus `json:"status"`
 	Done       bool           `json:"done"`
+	ChainData  *string        `json:"chainData,omitempty"`
 }
 
 type NodeExecLog struct {
@@ -68,7 +71,8 @@ type NodeExecLog struct {
 	ShortcutType *int      `json:"shortcutType"`
 	Payload      *string   `json:"payload"`
 	Ok           bool      `json:"ok"`
-	Out          string    `json:"out"`
+	StdOut       string    `json:"stdOut"`
+	StdErr       string    `json:"stdErr"`
 	CreateTime   time.Time `json:"createTime"`
 }
 

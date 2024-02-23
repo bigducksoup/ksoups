@@ -108,7 +108,8 @@ func (c *CRUDService) BindShortcut(nodeId string, shortcutId string) error {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("ScriptShortcut with Id = " + shortcutId + " not found")
 	}
-	err = c.Db.First(&model.Node{}, "id = ?", nodeId).Error
+	var node model.Node
+	err = c.Db.First(&node, "id = ?", nodeId).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.New("Node with Id = " + nodeId + " not found")
 	}
@@ -123,6 +124,7 @@ func (c *CRUDService) BindShortcut(nodeId string, shortcutId string) error {
 		Id:         utils.UUID(),
 		NodeId:     nodeId,
 		ShortcutId: shortcutId,
+		ChainId:    node.ChainId,
 	}
 	err = c.Db.Create(&oneLineToNode).Error
 	if err != nil {
@@ -253,6 +255,18 @@ func (c *CRUDService) ChainList() ([]model.Chain, error) {
 	return chains, err
 }
 
+func (c *CRUDService) GetBindingsByChainID(chainId string) ([]model.ShortcutNodeBinding, error) {
+
+	var bindings []model.ShortcutNodeBinding
+
+	err := c.Db.Where("chain_id = ?", chainId).Find(&bindings).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return bindings, nil
+}
+
 func (c *CRUDService) GetNodesByChainId(chainId string) ([]model.Node, error) {
 	var nodes []model.Node
 	err := c.Db.Find(&nodes, "chain_id = ?", chainId).Error
@@ -309,14 +323,14 @@ func (c *CRUDService) LoadFromAllData(p *param.ChainAllDataParams) error {
 			Name:        node.Name,
 			ChainId:     p.ChainID,
 			Description: node.Description,
-			//TODO set a root node for dispatch
-			Root: false,
+			Root:        node.Root,
 		})
 
 		newBindings = append(newBindings, model.ShortcutNodeBinding{
 			Id:         utils.UUID(),
 			NodeId:     node.ID,
 			ShortcutId: node.Shortcut.ID,
+			ChainId:    p.ChainID,
 		})
 
 	}
@@ -352,15 +366,15 @@ func (c *CRUDService) LoadFromAllData(p *param.ChainAllDataParams) error {
 		tx.Model(&model.Chain{}).Where("id = ?", p.ChainID).Update("origin_data", p.OriginData)
 
 		err = tx.Create(&newNodes).Error
-		if err != nil {
+		if err != nil && !errors.Is(err, gorm.ErrEmptySlice) {
 			return err
 		}
 		err = tx.Create(&newEdges).Error
-		if err != nil {
+		if err != nil && !errors.Is(err, gorm.ErrEmptySlice) {
 			return err
 		}
 		err = tx.Create(&newBindings).Error
-		if err != nil {
+		if err != nil && !errors.Is(err, gorm.ErrEmptySlice) {
 			return err
 		}
 

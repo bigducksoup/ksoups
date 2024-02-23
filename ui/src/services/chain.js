@@ -254,3 +254,81 @@ export const getChainExecResult = async (dispatchId) => {
         return  await response.json();
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+export const loadData = async (processedData) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/load`,{
+        method: 'POST',
+        headers: {
+            'sid': sid
+        },
+        body: JSON.stringify(processedData)
+    })
+
+    return await response.json()
+}
+
+
+///chain/v2/exec/list
+export const getExecList = async (chainId) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/v2/exec/list?chainId=${chainId}`,{
+        method: 'GET',
+        headers: {
+            'sid': sid
+        },
+    })
+    return await response.json()
+}
+
+// /chain/v2/exec/detail
+export const getExecDetail = async (dispatchId) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/v2/exec/detail?dispatchId=${dispatchId}`,{
+        method: 'GET',
+        headers: {
+            'sid': sid
+        },
+    })
+    return await response.json()
+}
+
+// /chain/v2/machine/new
+export const newMachine = async (chainId) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/v2/machine/new?chainId=${chainId}`,{
+        method: 'PUT',
+        headers: {
+            'sid': sid
+        },
+    })
+    return await response.json()
+}
+
+// /chain/v2/machine/exec/one
+export const machineExecOne = async (machineId) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/v2/machine/exec/one?machineId=${machineId}`,{
+        method: 'PUT',
+        headers: {
+            'sid': sid
+        },
+    })
+    return await response.json()
+}
+
+
+// /chain/v2/machine/exec/all
+export const machineExecAll = async (machineId) => {
+    let sid = window.localStorage.getItem('sid');
+    const response = await fetch(`${baseUrl.value}api/chain/v2/machine/exec/all?machineId=${machineId}`,{
+        method: 'PUT',
+        headers: {
+            'sid': sid
+        },
+    })
+    return await response.json()
+}

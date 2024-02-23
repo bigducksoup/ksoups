@@ -94,6 +94,17 @@ func SetUpRouters(engine *gin.Engine) {
 		chainGroup := apiGroup.Group("/chain")
 		{
 
+			v2 := chainGroup.Group("/v2")
+			{
+				v2.PUT("/machine/new", handler.NewExecMachine)
+				v2.PUT("/machine/exec/all", handler.MachineExecAll)
+				v2.PUT("/machine/exec/one", handler.MachineExecOne)
+
+				v2.GET("/exec/list", handler.ExecList)
+				v2.GET("/exec/detail", handler.ExecDetail)
+
+			}
+
 			chainGroup.POST("/load", handler.ChainLoadFromAllData)
 
 			// 链式指令信息

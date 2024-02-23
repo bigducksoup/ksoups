@@ -30,3 +30,8 @@ type DispatchStatus struct {
 	FailThen    *NodeDetail          `json:"failThen"`
 	PreNodes    []*model.NodeExecLog `json:"preNodes"`
 }
+
+type ExecDetail struct {
+	Info    *model.DispatchLog  `json:"info,omitempty"`
+	Results []model.NodeExecLog `json:"execResults"`
+}

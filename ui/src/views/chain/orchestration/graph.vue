@@ -78,9 +78,9 @@ register({
 
 const TeleportContainer = getTeleport();
 
-const emits = defineEmits(['onClickShortcut'])
+const emits = defineEmits(['onClickNode','onClickNodeWithResult'])
 
-const props = defineProps(['dndContainer','editable','data']);
+const props = defineProps(['dndContainer','editable','data','nodeExecResults']);
 const graphRef = ref(null);
 
 const g = ref(null);
@@ -277,7 +277,13 @@ const initGraph = (data) => {
 
 
   g.value.on('node:click',({node}) => {
-    emits('onClickShortcut',node.getData().proto)
+
+    if (node.getData().nodeExecResult){
+      emits('onClickNodeWithResult',node)
+      return
+    }
+
+    emits('onClickNode',node)
   })
 
   g.value.on('click:redCircle',({edge}) => {
@@ -333,14 +339,13 @@ const initGraph = (data) => {
   })
 
 
-
-
-
   g.value.on('node:change:data', ({node}) => {
     const edges = g.value.getIncomingEdges(node)
     const data = node.getData()
 
-    console.log(data)
+    if(data.root === false)return
+
+    g.value.getNodes().filter(item => item.id !== node.id).forEach(item => item.setData({root:false}))
 
     // edges?.forEach((edge) => {
     //   if (status === 'running') {
@@ -355,11 +360,39 @@ const initGraph = (data) => {
 
 
   g.value.fromJSON(props.data)
+  if (props.nodeExecResults){
+    updateNodeExecData(props.nodeExecResults,g.value)
+  }
 };
+
+
+
+const updateNodeExecData = (execResults,graph) => {
+  setTimeout(()=>{
+    let nodes =  graph.getNodes()
+    if(nodes.length === 0){
+      updateNodeExecData(execResults,graph)
+      return
+    }
+
+    console.log(execResults)
+
+    nodes.filter(node => execResults.filter(res => res.nodeId === node.id).forEach(res => {
+      node.setData({
+        nodeExecResult:res
+      })
+    }))
+
+  },100)
+}
 
 
 watch(() => props.data,(value, oldValue) => {
     g.value.fromJSON(value)
+})
+
+watch(() => props.nodeExecResults,(nv,ov) => {
+  updateNodeExecData(nv,g.value)
 })
 
 /**
@@ -400,7 +433,8 @@ const exportData = () => {
 
 defineExpose({
   startDrag,
-  exportData
+  exportData,
+  g
 });
 
 onMounted(() => {

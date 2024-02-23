@@ -41,3 +41,70 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	return resp.StdOut, true
 
 }
+
+func (s *Runner) ResultRun(sc *model.Shortcut) (*data.ShortcutRunResp, error) {
+	oneLineShortcutRun := data.ShortcutRun{
+		Type:    sc.Type,
+		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
+		JustRun: sc.JustRun,
+		Payload: sc.Payload,
+	}
+
+	bytes, err := server.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp := data.ShortcutRunResp{}
+
+	err = json.Unmarshal(bytes, &resp)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
+type ShortcutRunner interface {
+	Run(shortcut model.Shortcut) (RunResult, error)
+}
+
+type NormalShortcutRunner struct {
+}
+
+func NewNormalShortcutRunner() *NormalShortcutRunner {
+	return &NormalShortcutRunner{}
+}
+
+func (n *NormalShortcutRunner) Run(sc model.Shortcut) (RunResult, error) {
+	var res RunResult
+
+	oneLineShortcutRun := data.ShortcutRun{
+		Type:    sc.Type,
+		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
+		JustRun: sc.JustRun,
+		Payload: sc.Payload,
+	}
+
+	bytes, err := server.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+
+	if err != nil {
+		return res, err
+	}
+
+	resp := data.ShortcutRunResp{}
+
+	err = json.Unmarshal(bytes, &resp)
+
+	if err != nil {
+		return res, err
+	}
+
+	res.Ok = resp.Ok
+	res.StdOut = resp.StdOut
+	res.StdErr = resp.StdErr
+
+	return res, nil
+}

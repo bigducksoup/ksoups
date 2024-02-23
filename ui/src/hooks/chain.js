@@ -4,7 +4,7 @@ import {
     createNode,
     deleteNode,
     getChainDetail, getChainExecHistory, getChainExecResult,
-    linkNode, newDispatch, setRoot, singleStepDispatch,
+    linkNode, machineExecAll, machineExecOne, newDispatch, newMachine, setRoot, singleStepDispatch,
     unbindShortcut,
     unlinkNode
 } from '../services/chain.js'
@@ -246,5 +246,44 @@ const useChainExecInfo = (chainId) => {
 
 
 
+const useMachine = () => {
 
-export {useChainInfo, useNodeOperation, useChainExecInfo}
+    const message = useMessage()
+
+
+    const NewMachine = async (chainId) => {
+        const res  = await newMachine(chainId)
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return null
+        }
+
+        return  res['data']
+    }
+
+    const MachineExecOne = async (machineId) => {
+        const res = await machineExecOne(machineId)
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return null
+        }
+
+        return res['data']
+    }
+
+    const MachineExecAll = async (machineId) => {
+        const res = await machineExecAll(machineId)
+        if (res['code'] !== 200) {
+            message.error(res['msg'])
+            return null
+        }
+
+        return  res['data']
+    }
+
+    return {NewMachine,MachineExecAll,MachineExecOne}
+
+}
+
+
+export {useChainInfo, useNodeOperation, useChainExecInfo,useMachine}

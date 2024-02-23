@@ -24,11 +24,10 @@ func main() {
 
 	hp := global.Conf.WebApi.Port
 	sp := global.Conf.Center.Port
-
 	db.InitDB()
 	service.Init()
-
 	server.Start(sp)
+
 	api.InitApiServer(hp)
 
 }
