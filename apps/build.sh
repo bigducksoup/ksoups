@@ -24,6 +24,7 @@ for arch in "${TARGET_ARCH[@]}"; do
         output_name+="v8"
     fi
 
+
     # 执行交叉编译
     GOOS="$TARGET_OS" GOARCH="$arch" CC="x86_64-linux-musl-gcc" CXX="x86_64-linux-musl-g++"  CGO_ENABLED=1 go build -ldflags "-linkmode external -extldflags -static"  -o "build/$output_name" center/main.go
 

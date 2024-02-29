@@ -17,7 +17,7 @@ func main() {
 	log.SetPrefix("[center]")
 	log.SetFlags(log.Lshortfile | log.Lmicroseconds | log.Ldate)
 
-	path := flag.String("c", "./probe/conf.yaml", "config file path")
+	path := flag.String("c", "./probe/probe.yaml", "config file path")
 	flag.Parse()
 
 	//解析配置文件

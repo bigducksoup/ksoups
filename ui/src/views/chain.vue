@@ -127,40 +127,6 @@ onMounted(() => {
           </RouterView>
         </n-layout-content>
       </n-layout>
-
-      <!-- <div class="chains w-2/12 min-h-screen p-3 relative" ref="chainListRef">
-
-        <button @click="" class="absolute right-0 top-1/2 -translate-y-1/2 h-10 w-10 bg-green-500 translate-x-1/2 z-10 rounded-full">
-            收起
-        </button>
-
-        <div
-            @click="showAddChainModal = true"
-            class="rounded group hover:border-green-400 hover:border-[1px] border-[1px] border-gray-700 transition hover:cursor-pointer h-14 mb-2 flex items-center justify-center"
-        >
-          <div
-              class="w-10 h-10 border-[1px] border-gray-700 rounded-full flex items-center justify-center transition group-hover:bg-green-500 group-hover:text-black"
-          >
-            <n-icon size="25">
-              <add/>
-            </n-icon>
-          </div>
-        </div>
-        <div
-            @click="chooseChain(item)"
-            v-for="item in chainList"
-            :class="selectedChain.id === item.id ? 'choosen' : 'normal'"
-        >
-          {{ item.name }}
-        </div>
-      </div>
-      <div class="w-10/12 h-screen overflow-scroll">
-        <RouterView v-slot="{ Component }">
-          <keep-alive>
-            <component ref="detail" :key="$route.params.chainId" :is="Component"/>
-          </keep-alive>
-        </RouterView>
-      </div> -->
     </div>
     <n-modal v-model:show="showAddChainModal" title="添加Chain">
       <div class="w-[400px] h-[300px] rounded p-3 bg-gray-700 flex flex-col">

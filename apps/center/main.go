@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	path := flag.String("c", "./center/conf.yaml", "config file path")
+	path := flag.String("c", "./center/center.yaml", "config file path")
 	flag.Parse()
 
 	//解析配置文件

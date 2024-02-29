@@ -140,15 +140,6 @@ func SetUpRouters(engine *gin.Engine) {
 			// 设置链式指令根节点
 			chainGroup.PUT("/node/set/root", handler.SetChainRoot)
 
-			// 链式指令日志
-			chainGroup.GET("/exec/result", handler.ChainExecResult)
-
-			chainGroup.PUT("/exec/dispatch/new", handler.NewDispatch)
-
-			chainGroup.PUT("/exec/single/step/dispatch", handler.DoSingleStepDispatch)
-
-			chainGroup.POST("/exec/all/step/dispatch", handler.DoAllDispatch)
-
 			chainGroup.GET("/exec/history", handler.ChainExecLogHistory)
 
 		}

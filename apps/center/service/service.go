@@ -18,7 +18,6 @@ var (
 
 var (
 	ChainCRUD   chain.CRUDService
-	ChainEXEC   chain.ExecService
 	ChainEXECV2 v2.ExecService
 	ChainLOG    chain.LogService
 	ChainINFO   v2.InfoService
@@ -46,11 +45,6 @@ func Init() {
 	}
 	ChainLOG = chain.LogService{Db: global.DB}
 	ChainCRUD = chain.CRUDService{Db: global.DB}
-	ChainEXEC = chain.ExecService{
-		ChainCRUD: &ChainCRUD,
-		Log:       &ChainLOG,
-	}
-
 	ChainEXECV2 = v2.ExecService{
 		CRUDService: &ChainCRUD,
 	}
