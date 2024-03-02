@@ -102,7 +102,11 @@ const onClickExecItem = async (dispatch) => {
   if (res['code'] !== 200 ){
     return
   }
-  graphData.value = JSON.parse(res['data']['info']['chainData'])
+
+  if (res['data']['info']['chainData'] !== ''){
+    graphData.value = JSON.parse(res['data']['info']['chainData'])
+  }
+
   execInfo.value = res['data']['info']
   nodeExecResults.value = res['data']['execResults']
 }

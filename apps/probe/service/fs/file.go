@@ -150,9 +150,22 @@ func GetFile(path string) (*common.File, error) {
 	v, ok := fileCache.Get(path)
 
 	if ok {
+		info, err := os.Stat(path)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if info.ModTime() != v.ModTime {
+			return LoadFileThenPutInCache(path)
+		}
 		return v, nil
 	}
 
+	return LoadFileThenPutInCache(path)
+}
+
+func LoadFileThenPutInCache(path string) (*common.File, error) {
 	file, err := common.NewFile(path)
 
 	if err != nil {
@@ -161,7 +174,6 @@ func GetFile(path string) (*common.File, error) {
 	}
 
 	fileCache.Put(path, file)
-	log.Println(fileCache.Size())
 
 	return file, nil
 }

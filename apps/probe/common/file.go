@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 var validFileSuffix = map[string]bool{
@@ -80,6 +81,7 @@ type File struct {
 	Path    string
 	Size    int64
 	Content []string
+	ModTime time.Time
 	lock    sync.Mutex
 }
 
@@ -99,6 +101,13 @@ func NewFile(path string) (*File, error) {
 		return nil, err
 	}
 
+	//read file info
+	info, err := os.Stat(path)
+
+	if err != nil {
+		return nil, err
+	}
+
 	content := strings.Split(string(ct), "\n")
 
 	file := &File{
@@ -106,6 +115,7 @@ func NewFile(path string) (*File, error) {
 		Size:    fileInfo.Size(),
 		Content: content,
 		lock:    sync.Mutex{},
+		ModTime: info.ModTime(),
 	}
 
 	return file, nil
