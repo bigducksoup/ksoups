@@ -65,6 +65,20 @@ onMounted(()=>{
   term.onKey((e) => {
     ws.send(e.key)
   })
+
+
+  // 添加复制和粘贴事件处理程序
+  term.textarea.addEventListener('copy', (e) => {
+    const selectedText = term.getSelection();
+    e.clipboardData.setData('text/plain', selectedText);
+    e.preventDefault();
+  });
+
+  term.textarea.addEventListener('paste', (e) => {
+    const text = e.clipboardData.getData('text/plain');
+    ws.send(text);
+    e.preventDefault();
+  });
 })
 
 </script>

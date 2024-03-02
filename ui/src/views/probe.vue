@@ -20,7 +20,6 @@
 
       <div class="layout-left w-60 flex flex-col items-center bg-[#13151D]">
         <div class="w-full text-green-500 flex items-center justify-center h-10 mt-5">
-          选择节点
           <n-popselect
               v-model:value="selectedItem['id']"
               :options="nodeOptions"
@@ -29,7 +28,7 @@
               trigger="click"
               :on-update-value="chooseNode"
           >
-            <n-button size="small" class="ml-2">{{ selectedItem['id'] || '选择一个node' }}</n-button>
+            <n-button size="small" class="ml-2 w-[60%] overflow-hidden">选择节点</n-button>
           </n-popselect>
         </div>
 

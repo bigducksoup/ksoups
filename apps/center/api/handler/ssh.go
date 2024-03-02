@@ -12,28 +12,6 @@ import (
 	"net/http"
 )
 
-func SSHHandlerLoad(e *gin.RouterGroup) {
-
-	sshRouters := e.Group("/ssh")
-
-	sshRouters.GET("/group/content", GetSSHInfo)
-
-	sshRouters.PUT("/info/save", SaveSSHInfo)
-
-	sshRouters.PUT("/group/save", NewGroup)
-
-	sshRouters.POST("/info/update", UpdateSSHInfo)
-
-	sshRouters.DELETE("/info/delete", DeleteSSHInfo)
-
-	sshRouters.POST("/group/update", UpdateGroupInfo)
-
-	sshRouters.GET("/group/tree", GroupTree)
-
-	sshRouters.DELETE("/group/delete", DeleteGroup)
-
-}
-
 // GetSSHInfo 获取组内信息（包括子组，和ssh信息）
 // GET
 // @Param groupId 组Id

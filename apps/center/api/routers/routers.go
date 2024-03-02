@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"apps/center/api/handler"
 	"apps/center/api/middleware"
 	"apps/center/api/ws"
 	"apps/center/static"
@@ -32,140 +31,17 @@ func SetUpRouters(engine *gin.Engine) {
 
 	engine.StaticFS("/assets", assets)
 
+	engine.GET("/ws/:app", ws.HandleWS)
+
 	// api path
 	apiGroup := engine.Group("/api")
-
-	engine.GET("/ws/:app", ws.HandleWS)
-	// use auth middleware
 	apiGroup.Use(middleware.AuthMiddleWare())
-	{
-		// 文件相关
-		fileGroup := apiGroup.Group("/file")
-		{
-			// 读文件
-			fileGroup.GET("/read", handler.FileRead)
 
-			// 修改文件
-			fileGroup.POST("/modify", handler.FileModify)
+	InitAuthRouter(apiGroup)
+	InitFSRouter(apiGroup)
+	InitShortcutRouter(apiGroup)
+	InitChainRouter(apiGroup)
+	InitInfoRouter(apiGroup)
+	InitSSHRouter(apiGroup)
 
-			// 创建文件
-			fileGroup.POST("/create", handler.FileCreate)
-
-		}
-
-		// 目录相关
-		dirGroup := apiGroup.Group("/dir")
-		{
-			// 读目录
-			dirGroup.GET("/read", handler.DirRead)
-
-			// 创建目录
-			dirGroup.POST("/create", handler.DirCreate)
-
-		}
-
-		// 快捷指令相关
-		shortcutGroup := apiGroup.Group("/shortcut")
-		{
-
-			// 创建快捷指令
-			shortcutGroup.POST("/create", handler.ShortcutCreate)
-
-			// 列出快捷指令
-			shortcutGroup.GET("/list", handler.ListShortcuts)
-
-			// 运行快捷指令
-			shortcutGroup.POST("/run", handler.RunShortcut)
-
-			// 删除快捷指令
-			shortcutGroup.DELETE("/delete", handler.DeleteShortcut)
-
-			// 快捷指令分组 根据probeId
-			shortcutGroup.GET("/group", handler.ShortcutGroup)
-
-			// 更新快捷指令
-			shortcutGroup.POST("/update", handler.UpdateShortcut)
-
-			// 快捷指令运行历史
-			shortcutGroup.GET("/run/history", handler.ShortcutRunHistory)
-		}
-
-		// 链式指令调度相关
-		chainGroup := apiGroup.Group("/chain")
-		{
-
-			v2 := chainGroup.Group("/v2")
-			{
-				v2.PUT("/machine/new", handler.NewExecMachine)
-				v2.PUT("/machine/exec/all", handler.MachineExecAll)
-				v2.PUT("/machine/exec/one", handler.MachineExecOne)
-
-				v2.GET("/exec/list", handler.ExecList)
-				v2.GET("/exec/detail", handler.ExecDetail)
-
-			}
-
-			chainGroup.POST("/load", handler.ChainLoadFromAllData)
-
-			// 链式指令信息
-			chainGroup.GET("/info", handler.ChainInfo)
-
-			// 链式指令列表
-			chainGroup.GET("/list", handler.ChainList)
-
-			// 创建链式指令
-			chainGroup.POST("/create", handler.ChainCreate)
-
-			// 删除链式指令
-			chainGroup.DELETE("/delete", handler.ChainDelete)
-
-			// 创建链式指令节点
-			chainGroup.POST("/node/create", handler.NodeCreate)
-
-			// 删除指令节点
-			chainGroup.DELETE("/node/delete", handler.NodeDelete)
-
-			// 绑定快捷指令到节点
-			chainGroup.POST("/node/bind/shortcut", handler.BindShortcut)
-
-			// 解绑快捷指令
-			chainGroup.POST("/node/unbind/shortcut", handler.UnBindShortcut)
-
-			// 链接两个节点
-			chainGroup.POST("/node/link", handler.LinkNodes)
-
-			// 断开两个节点
-			chainGroup.POST("/node/unlink", handler.UnLinkNodes)
-
-			// 设置链式指令根节点
-			chainGroup.PUT("/node/set/root", handler.SetChainRoot)
-
-			chainGroup.GET("/exec/history", handler.ChainExecLogHistory)
-
-		}
-
-		// 信息相关
-		infoGroup := apiGroup.Group("/info")
-		{
-
-			// 在线探针信息
-			infoGroup.GET("/nodes", handler.OnlineNode)
-
-		}
-
-		// ssh相关
-		handler.SSHHandlerLoad(apiGroup)
-
-		// 鉴权相关
-		authGroup := apiGroup.Group("/auth")
-		{
-			// 登录
-			authGroup.POST("/login", handler.Login)
-
-			// 检查session
-			authGroup.POST("/check_login", handler.CheckLogin)
-
-		}
-
-	}
 }
