@@ -130,13 +130,22 @@ func DoSSH(client *Client, c *gin.Context) {
 			cancel()
 			Ctx.deRegChan <- client
 			session.Close()
+			ow.Close()
+			or.Close()
+			er.Close()
+			ew.Close()
 		}
 
 		_, err = (*w).Write(bytes)
-
 		if err != nil {
+			log.Println("err occur !!!" + err.Error())
 			cancel()
 			Ctx.deRegChan <- client
+			session.Close()
+			ow.Close()
+			or.Close()
+			er.Close()
+			ew.Close()
 		}
 
 	})
@@ -146,30 +155,40 @@ func DoSSH(client *Client, c *gin.Context) {
 		cancel()
 		Ctx.deRegChan <- client
 		session.Close()
+		ow.Close()
+		or.Close()
+		er.Close()
+		ew.Close()
 		log.Println(err)
 	}
 
-	go handleOut(ctx, er, func(b byte) {
-		client.Send(websocket.BinaryMessage, []byte{b})
+	go handleOut(ctx, or, func(b []byte) {
+		client.Send(websocket.BinaryMessage, b)
 	}, func(err error) {
-		or.Close()
 		cancel()
 		session.Close()
 		Ctx.deRegChan <- client
+		ow.Close()
+		or.Close()
+		er.Close()
+		ew.Close()
 	})
 
-	handleOut(ctx, or, func(b byte) {
-		client.Send(websocket.BinaryMessage, []byte{b})
+	handleOut(ctx, er, func(b []byte) {
+		client.Send(websocket.BinaryMessage, b)
 	}, func(err error) {
-		or.Close()
 		cancel()
 		session.Close()
 		Ctx.deRegChan <- client
+		ow.Close()
+		or.Close()
+		er.Close()
+		ew.Close()
 	})
 
 }
 
-func handleOut(ctx context.Context, or *io.PipeReader, f func(b byte), eh func(err error)) {
+func handleOut(ctx context.Context, or *io.PipeReader, f func(b []byte), eh func(err error)) {
 
 	reader := bufio.NewReader(or)
 
@@ -179,12 +198,15 @@ func handleOut(ctx context.Context, or *io.PipeReader, f func(b byte), eh func(e
 			or.Close()
 			return
 		default:
-			b, err := reader.ReadByte()
+
+			b := make([]byte, 1024)
+			n, err := reader.Read(b)
+
 			if err != nil {
 				eh(err)
 				break
 			}
-			f(b)
+			f(b[:n])
 		}
 	}
 

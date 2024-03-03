@@ -25,9 +25,11 @@ const router = useRouter()
       </div>
     </div>
 
-    <div class="absolute left-1/2 top-1/2 md:-translate-y-1/2 transition-all translate-y-36 -translate-x-1/2 text-blue-500 text-xl ">
-      fmt.Println("Hello, World!")
+    <div class="absolute left-1/2 top-1/2 md:-translate-y-1/2 transition-all translate-y-36 -translate-x-1/2 text-blue-500 text-[100px] ">
+      KS<span class="text-green-500">O</span>U<span class="text-green-500">PS</span>
     </div>
+
+
 
   </div>
 </template>
