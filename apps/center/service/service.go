@@ -3,10 +3,11 @@ package service
 import (
 	scrun "apps/center/action"
 	"apps/center/global"
-	"apps/center/server"
+	"apps/center/server/ServerContext"
 	"apps/center/service/chain"
 	v2 "apps/center/service/chain/v2"
 	"apps/center/service/fs"
+	"apps/center/service/info"
 	"apps/center/service/shortcut"
 	"apps/center/service/ssh"
 )
@@ -32,6 +33,11 @@ var (
 	FS_OPERATION fs.OperationService
 )
 
+var (
+	PROBE_INFO  info.ProbeInfoService
+	CENTER_INFO info.CenterInfoService
+)
+
 func Init() {
 
 	Graph = v2.GraphService{
@@ -54,6 +60,13 @@ func Init() {
 	}
 
 	SSHCRUD = ssh.CRUDService{Db: global.DB}
-	FS_OPERATION = fs.OperationService{ServerCtx: &(server.Ctx)}
+	FS_OPERATION = fs.OperationService{ServerCtx: &(ServerContext.Ctx)}
+	PROBE_INFO = info.ProbeInfoService{
+		Db: global.DB,
+	}
+
+	CENTER_INFO = info.CenterInfoService{
+		Db: global.DB,
+	}
 
 }

@@ -2,11 +2,13 @@ package connect
 
 import (
 	"apps/common/message"
+	"apps/common/message/data"
 	"apps/common/utils"
 	"apps/probe/common"
 	"apps/probe/config"
 	"apps/probe/handlers"
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -15,6 +17,7 @@ import (
 )
 
 func InitConnect(addr string, ctx context.Context) {
+	InitInfo()
 
 	//create a connection
 	connection := common.CreateConnection(addr)
@@ -23,13 +26,13 @@ func InitConnect(addr string, ctx context.Context) {
 	err := register(&connection)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("register to center err")
 	}
 
 	//notifyChan := make(chan any, 1)
 
 	//goroutine for heartbeat
-	//go heartBeat(&connection, ctx, &notifyChan)
+	//go heartBeat(&connection, ServerContext, &notifyChan)
 
 	for {
 		select {
@@ -131,21 +134,29 @@ func heartBeat(connection *common.Connection, ctx context.Context, notifyChan *c
 
 }
 
+var registerInfo data.RegisterInfo
+
 func register(connection *common.Connection) error {
 
 	if config.Conf.Name == "" {
 		config.Conf.Name = strings.Split(connection.LocalAddr, ":")[0]
 	}
 
+	marshaledRegisterInfo, err := json.Marshal(registerInfo)
+
+	if err != nil {
+		panic(err)
+	}
+
 	msg := message.Msg{
 		Id:       utils.UUID(),
 		Type:     message.REGISTER,
-		Data:     []byte(config.Conf.Name),
+		Data:     marshaledRegisterInfo,
 		DataType: message.DEFAULT,
 		ErrMark:  false,
 	}
 
-	err := connection.SendMessage(msg)
+	err = connection.SendMessage(msg)
 
 	if err != nil {
 		return err
@@ -166,5 +177,34 @@ func register(connection *common.Connection) error {
 	}
 
 	return errors.New(string(resp.Data))
+
+}
+
+func InitInfo() {
+	bytes, err := utils.DecodeBase64ToKey(config.Conf.PublicKey)
+
+	if err != nil {
+		panic(err)
+	}
+
+	publicKey, err := utils.ParsePublicKey(bytes)
+
+	if err != nil {
+		panic(err)
+	}
+
+	encryptData, err := utils.EncryptData([]byte(config.Conf.Name), publicKey)
+
+	if err != nil {
+		panic(err)
+	}
+
+	md5 := utils.Md5([]byte(config.Conf.PublicKey))
+
+	registerInfo = data.RegisterInfo{
+		Name:          config.Conf.Name,
+		EncryptedName: encryptData,
+		PublicKeyMd5:  md5,
+	}
 
 }

@@ -1,4 +1,4 @@
-package server
+package ServerContext
 
 import (
 	"apps/common/message"
@@ -199,7 +199,7 @@ func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataTyp
 }
 
 func init() {
-	log.Println("server ctx initializing")
+	log.Println("server ServerContext initializing")
 	Ctx = Context{
 		Probes:      sync.Map{},
 		respChanMap: sync.Map{},

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"apps/center/server/ServerContext"
 	"apps/common/message"
 	"log"
 	"time"
@@ -12,7 +13,7 @@ func HandleRESPONSE(msg message.Msg) {
 
 	}
 
-	err := Ctx.ReceiveResp(msg.Id, msg)
+	err := ServerContext.Ctx.ReceiveResp(msg.Id, msg)
 
 	if err != nil {
 		log.Println("receive response failed")
@@ -25,14 +26,14 @@ func HandleHEARTBEAT(msg message.Msg) {
 
 	addr := string(msg.Data)
 
-	value, ok := Ctx.AddrProbe.Load(addr)
+	value, ok := ServerContext.Ctx.AddrProbe.Load(addr)
 
 	if !ok {
 		log.Println("no such connection")
 		return
 	}
 
-	probe := value.(*Probe)
+	probe := value.(*ServerContext.Probe)
 
 	probe.LastPingTime = time.Now()
 

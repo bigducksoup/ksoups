@@ -2,7 +2,7 @@ package shortcut
 
 import (
 	"apps/center/model"
-	"apps/center/server"
+	"apps/center/server/ServerContext"
 	v2 "apps/center/service/chain/v2"
 	"apps/common/message"
 	"apps/common/message/data"
@@ -175,7 +175,7 @@ func (c *CRUDService) CreateScriptFile(probeId string, name string, content stri
 		Content: content,
 	}
 
-	bytes, err := server.Ctx.SendMsgExpectRes(probeId, d, message.CREATE_SCRIPT)
+	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probeId, d, message.CREATE_SCRIPT)
 
 	if err != nil {
 		return nil, err

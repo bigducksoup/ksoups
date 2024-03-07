@@ -37,6 +37,7 @@ func InitDB() {
 		&model.ProbeInfo{},
 		&model.SSHInfo{},
 		&model.SSHGroup{},
+		&model.RegisterKey{},
 	)
 	if err != nil {
 		panic(err)

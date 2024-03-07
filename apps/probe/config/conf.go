@@ -9,6 +9,7 @@ type Config struct {
 	Name       string `yaml:"name"`
 	CenterAddr string `yaml:"center-addr"`
 	ScriptPath string `yaml:"script-path"`
+	PublicKey  string `yaml:"public-key"`
 }
 
 var Conf Config = Config{}
@@ -43,6 +44,10 @@ func afterPropertySet() {
 
 	if Conf.Name == "" {
 		panic("name is not set")
+	}
+
+	if Conf.PublicKey == "" {
+		panic("you should have a public key to identify yourself")
 	}
 
 	info, err := os.Stat(Conf.ScriptPath)

@@ -35,7 +35,7 @@ func SetUpRouters(engine *gin.Engine) {
 
 	// api path
 	apiGroup := engine.Group("/api")
-	apiGroup.Use(middleware.AuthMiddleWare())
+	apiGroup.Use(middleware.AuthenticationMiddleWare())
 
 	InitAuthRouter(apiGroup)
 	InitFSRouter(apiGroup)

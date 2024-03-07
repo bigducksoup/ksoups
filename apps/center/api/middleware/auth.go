@@ -11,7 +11,7 @@ var whiteList = map[string]any{
 	"/api/auth/login": nil,
 }
 
-func AuthMiddleWare() gin.HandlerFunc {
+func AuthenticationMiddleWare() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 
@@ -47,4 +47,18 @@ func AuthMiddleWare() gin.HandlerFunc {
 		ctx.Next()
 	}
 
+}
+
+func AuthorizationRoleMiddleWare(...string) gin.HandlerFunc {
+	// TODO  logic
+	return func(context *gin.Context) {
+
+	}
+}
+
+func AuthorizationPermMiddleWare(...string) gin.HandlerFunc {
+	// TODO  logic
+	return func(context *gin.Context) {
+
+	}
 }

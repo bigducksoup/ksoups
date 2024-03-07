@@ -15,5 +15,8 @@ func InitInfoRouter(e *gin.RouterGroup, middlewares ...gin.HandlerFunc) {
 		// 在线探针信息
 		infoGroup.GET("/nodes", handler.OnlineNode)
 
+		infoGroup.POST("/keypair/generate", handler.GenerateRSAKeyPair)
+
+		infoGroup.GET("/keypair/list", handler.GetRSAKeyPairs)
 	}
 }

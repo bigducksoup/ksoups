@@ -3,7 +3,11 @@ package server
 import (
 	"apps/center/global"
 	"apps/center/model"
+	"apps/center/server/ServerContext"
+	"apps/center/service"
 	"apps/common/message"
+	"apps/common/message/data"
+	"apps/common/utils"
 	"bufio"
 
 	"encoding/json"
@@ -45,7 +49,7 @@ func Start(port string) {
 func handleConn(conn *net.Conn) {
 
 	//处理probe注册
-	probe, err := handleRegister(conn, &Ctx, 20*time.Second)
+	probe, err := handleRegister(conn, &ServerContext.Ctx, 20*time.Second)
 
 	if err != nil {
 		log.Println(err)
@@ -113,9 +117,9 @@ func scanDeadProbe() {
 		select {
 		case <-ticker.C:
 			//遍历所有探针
-			Ctx.Probes.Range(func(key, value any) bool {
+			ServerContext.Ctx.Probes.Range(func(key, value any) bool {
 
-				probe := value.(*Probe)
+				probe := value.(*ServerContext.Probe)
 				lastPingTime := probe.LastPingTime
 				duration := time.Since(lastPingTime)
 
@@ -131,13 +135,44 @@ func scanDeadProbe() {
 
 }
 
-func offLineNode(probe *Probe) {
-	Ctx.RemoveProbe(probe.Id)
+func offLineNode(probe *ServerContext.Probe) {
+	ServerContext.Ctx.RemoveProbe(probe.Id)
 	global.DB.Model(&model.ProbeInfo{}).Where("id = ?", probe.Id).Update("online", false)
 }
 
+func checkRegisterInfo(info data.RegisterInfo) error {
+
+	//1. find private key
+	//2. try to decrypt registerInfo.encryptedName
+	//3. check whether registerInfo.Name == decryptedData
+
+	registerKey, err := service.CENTER_INFO.GetKeyPairByPublicKeyMd5(info.PublicKeyMd5)
+
+	if err != nil {
+		return err
+	}
+
+	privateKeyBytes, err := utils.DecodeBase64ToKey(registerKey.PrivateKey)
+	privateKey, err := utils.ParsePrivateKey(privateKeyBytes)
+	if err != nil {
+		return err
+	}
+
+	decryptData, err := utils.DecryptData([]byte(info.EncryptedName), privateKey)
+	if err != nil {
+		return err
+	}
+
+	if string(decryptData) != info.Name {
+		return errors.New("register invalid")
+	}
+
+	return nil
+
+}
+
 // 将probe注册到ctx
-func handleRegister(conn *net.Conn, serverCtx *Context, timeout time.Duration) (*Probe, error) {
+func handleRegister(conn *net.Conn, serverCtx *ServerContext.Context, timeout time.Duration) (*ServerContext.Probe, error) {
 
 	//超时定时器
 	timer := time.NewTimer(timeout)
@@ -173,9 +208,24 @@ func handleRegister(conn *net.Conn, serverCtx *Context, timeout time.Duration) (
 		//发生错误
 		return nil, err
 	case msg := <-msgChan:
+
+		registerInfo := data.RegisterInfo{}
+
+		err := json.Unmarshal(msg.Data, &registerInfo)
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = checkRegisterInfo(registerInfo)
+
+		if err != nil {
+			return nil, err
+		}
+
 		//创建探针
-		probeId := string(msg.Data)
-		_, err := serverCtx.GetProbe(probeId)
+		probeId := registerInfo.Name
+		_, err = serverCtx.GetProbe(probeId)
 
 		//err == nil 说明已存在id = probeId
 		if err == nil {
@@ -187,7 +237,7 @@ func handleRegister(conn *net.Conn, serverCtx *Context, timeout time.Duration) (
 		}
 
 		//创建probe
-		probe := CreateProbe(conn, probeId)
+		probe := ServerContext.CreateProbe(conn, probeId)
 		log.Printf("handling connection, addr:%s, id:%s \n", probe.Addr, probe.Id)
 
 		//添加探针
