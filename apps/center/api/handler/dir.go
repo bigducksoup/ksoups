@@ -3,7 +3,7 @@ package handler
 import (
 	"apps/center/api/param"
 	"apps/center/api/response"
-	"apps/center/server/ServerContext"
+	"apps/center/global"
 	"apps/common/message"
 	"apps/common/message/data"
 	"encoding/json"
@@ -30,13 +30,13 @@ func DirRead(ctx *gin.Context) {
 		FileOnly: fileOnly == "true",
 	}
 
-	probe, err := ServerContext.Ctx.GetProbe(probeId)
+	probe, err := global.CenterServer.Ctx.GetProbe(probeId)
 	if err != nil {
 		ctx.JSON(200, response.Fail(err))
 		return
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probe.Id, read, message.READDIR)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READDIR)
 
 	if err != nil {
 		ctx.JSON(200, response.Fail(err))
@@ -66,7 +66,7 @@ func DirCreate(c *gin.Context) {
 		return
 	}
 
-	probe, err := ServerContext.Ctx.GetProbe(p.ProbeId)
+	probe, err := global.CenterServer.Ctx.GetProbe(p.ProbeId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
@@ -78,7 +78,7 @@ func DirCreate(c *gin.Context) {
 		Permission: p.Permission,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probe.Id, dirCreate, message.CREATE_DIR)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, dirCreate, message.CREATE_DIR)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))

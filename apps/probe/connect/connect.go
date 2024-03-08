@@ -26,13 +26,13 @@ func InitConnect(addr string, ctx context.Context) {
 	err := register(&connection)
 
 	if err != nil {
-		log.Fatal("register to center err")
+		log.Fatal(err)
 	}
 
 	//notifyChan := make(chan any, 1)
 
 	//goroutine for heartbeat
-	//go heartBeat(&connection, ServerContext, &notifyChan)
+	//go heartBeat(&connection, core, &notifyChan)
 
 	for {
 		select {

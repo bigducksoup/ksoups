@@ -1,14 +1,14 @@
 package fs
 
 import (
-	"apps/center/server/ServerContext"
+	"apps/center/server/core"
 	"apps/common/message"
 	"apps/common/message/data"
 	"encoding/json"
 )
 
 type OperationService struct {
-	ServerCtx *ServerContext.Context
+	ServerCtx *core.Context
 }
 
 func (o *OperationService) DeleteFile(probeId string, path string) error {

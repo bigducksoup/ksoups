@@ -3,7 +3,6 @@ package service
 import (
 	scrun "apps/center/action"
 	"apps/center/global"
-	"apps/center/server/ServerContext"
 	"apps/center/service/chain"
 	v2 "apps/center/service/chain/v2"
 	"apps/center/service/fs"
@@ -60,7 +59,7 @@ func Init() {
 	}
 
 	SSHCRUD = ssh.CRUDService{Db: global.DB}
-	FS_OPERATION = fs.OperationService{ServerCtx: &(ServerContext.Ctx)}
+	FS_OPERATION = fs.OperationService{ServerCtx: global.CenterServer.Ctx}
 	PROBE_INFO = info.ProbeInfoService{
 		Db: global.DB,
 	}

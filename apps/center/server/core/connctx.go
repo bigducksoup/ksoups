@@ -1,4 +1,4 @@
-package ServerContext
+package core
 
 import (
 	"apps/common/message"
@@ -37,8 +37,9 @@ var Ctx Context
 type Context struct {
 	Probes sync.Map
 	//key string, value *chan Message.Msg
-	respChanMap sync.Map
-	AddrProbe   sync.Map
+	respChanMap     sync.Map
+	AddrProbe       sync.Map
+	responseTimeOut time.Duration
 }
 
 func (c *Context) GetProbe(id string) (*Probe, error) {
@@ -190,7 +191,7 @@ func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataTyp
 			return nil, errors.New(string(res.Data))
 		}
 		return res.Data, nil
-	case <-time.After(3000 * time.Second):
+	case <-time.After(c.responseTimeOut):
 		c.respChanMap.Delete(msg.Id)
 		close(resChan)
 		return []byte{}, errors.New("response time out reqId =" + msg.Id)
@@ -198,10 +199,24 @@ func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataTyp
 
 }
 
-func init() {
-	log.Println("server ServerContext initializing")
-	Ctx = Context{
-		Probes:      sync.Map{},
-		respChanMap: sync.Map{},
+func (c *Context) Reset() {
+	c.Probes.Range(func(key, value any) bool {
+		probe := value.(*Probe)
+		conn := *(probe.Conn)
+		conn.Close()
+		return true
+	})
+
+	c.Probes = sync.Map{}
+	c.respChanMap = sync.Map{}
+	c.AddrProbe = sync.Map{}
+}
+
+func NewCenterServerContext(responseTimeout time.Duration) *Context {
+	return &Context{
+		Probes:          sync.Map{},
+		respChanMap:     sync.Map{},
+		AddrProbe:       sync.Map{},
+		responseTimeOut: responseTimeout,
 	}
 }

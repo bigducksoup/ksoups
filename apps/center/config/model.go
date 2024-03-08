@@ -12,5 +12,5 @@ type WebApi struct {
 }
 
 type Center struct {
-	Port string `yaml:"port"`
+	Port int `yaml:"port"`
 }

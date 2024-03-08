@@ -3,7 +3,7 @@ package handler
 import (
 	"apps/center/api/param"
 	"apps/center/api/response"
-	"apps/center/server/ServerContext"
+	"apps/center/global"
 	"apps/common/message"
 	"apps/common/message/data"
 	"encoding/json"
@@ -21,7 +21,7 @@ func FileRead(c *gin.Context) {
 		return
 	}
 
-	probe, err := ServerContext.Ctx.GetProbe(id)
+	probe, err := global.CenterServer.Ctx.GetProbe(id)
 	if err != nil {
 		c.JSON(200, response.StringFail(err.Error()))
 		return
@@ -31,7 +31,7 @@ func FileRead(c *gin.Context) {
 		Path: path,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probe.Id, read, message.READFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READFILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -61,7 +61,7 @@ func FileModify(c *gin.Context) {
 		c.JSON(200, response.Fail(err))
 	}
 
-	probe, err := ServerContext.Ctx.GetProbe(p.ProbeId)
+	probe, err := global.CenterServer.Ctx.GetProbe(p.ProbeId)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -81,7 +81,7 @@ func FileModify(c *gin.Context) {
 		})
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFYFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFYFILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -111,7 +111,7 @@ func FileCreate(c *gin.Context) {
 		return
 	}
 
-	probe, err := ServerContext.Ctx.GetProbe(fileCreateParams.ProbeId)
+	probe, err := global.CenterServer.Ctx.GetProbe(fileCreateParams.ProbeId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
@@ -128,7 +128,7 @@ func FileCreate(c *gin.Context) {
 		Permission: fileCreateParams.Permission,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(probe.Id, fileCreate, message.CREATEFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileCreate, message.CREATEFILE)
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
 		return

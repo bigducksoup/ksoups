@@ -40,9 +40,9 @@ func GenerateRSAKeyPair(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	c.JSON(http.StatusOK, response.Success(gin.H{
 		"publicKey": publicKeyBase64,
-	})
+	}))
 }
 
 func GetRSAKeyPairs(c *gin.Context) {

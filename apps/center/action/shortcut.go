@@ -1,8 +1,8 @@
 package action
 
 import (
+	"apps/center/global"
 	"apps/center/model"
-	"apps/center/server/ServerContext"
 	"apps/common/message"
 	"apps/common/message/data"
 	"encoding/json"
@@ -21,7 +21,7 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return err.Error(), false
@@ -50,7 +50,7 @@ func (s *Runner) ResultRun(sc *model.Shortcut) (*data.ShortcutRunResp, error) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +88,7 @@ func (n *NormalShortcutRunner) Run(sc model.Shortcut) (RunResult, error) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := ServerContext.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return res, err
