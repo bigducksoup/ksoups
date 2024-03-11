@@ -15,7 +15,10 @@ const router = useRouter()
     <div
         class="w-full h-screen -translate-y-14  p-5 flex flex-col transition-all items-center justify-center md:justify-normal md:translate-y-0 md:w-60 md:items-start">
       <div class="nav-text" @click="router.push('/probe')">
-        节点管理
+        PROBE管理
+      </div>
+      <div class="nav-text" @click="router.push('/center')">
+        CENTER管理
       </div>
       <div class="nav-text" @click="router.push('/chain')">
         命令调度
@@ -56,7 +59,6 @@ const router = useRouter()
 
 .ani {
   animation: TextShowUp 0.3s ease-out;
-
 }
 
 /* 在你的 CSS 文件中 */

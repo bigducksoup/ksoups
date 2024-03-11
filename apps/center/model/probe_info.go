@@ -1,7 +1,6 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -15,8 +14,15 @@ type ProbeInfo struct {
 }
 
 type RegisterKey struct {
-	gorm.Model
+	BaseModel
+	Name         string `json:"name"`
 	PublicKey    string `json:"public_key"`
 	PrivateKey   string `json:"private_key"`
 	PublicKeyMd5 string `json:"public_key_md5"`
+}
+
+type BaseModel struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -9,8 +9,6 @@ const message = useMessage();
 
 const {collapsed, expand, collapse} = useSiderControl();
 
-const {} = useMenu([]);
-
 const router = useRouter();
 const headerStyle = ref({
   animation: "full-to-normal 0.50s ease-in-out",

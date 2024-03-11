@@ -18,5 +18,7 @@ func InitInfoRouter(e *gin.RouterGroup, middlewares ...gin.HandlerFunc) {
 		infoGroup.POST("/keypair/generate", handler.GenerateRSAKeyPair)
 
 		infoGroup.GET("/keypair/list", handler.GetRSAKeyPairs)
+
+		infoGroup.DELETE("/keypair/delete", handler.DeleteRSAKeyPair)
 	}
 }

@@ -117,3 +117,38 @@ export const useSiderControl = () => {
 
 
 };
+
+
+
+export const useModal = () => {
+    const visible = ref(false);
+
+    const open = () => {
+        visible.value = true;
+    };
+
+    const close = () => {
+        visible.value = false;
+    };
+
+    return { visible, open, close };
+}
+
+
+export const useInput = (value, onUpdate = (value)=>{}) => {
+    const input = ref(value ?? '');
+
+    const update = (value) => {
+        input.value = value;
+        onUpdate(value);
+    }
+
+    const clear = () => {
+        input.value = '';
+        onUpdate('');
+    }
+
+
+
+    return {input, update,clear}
+}

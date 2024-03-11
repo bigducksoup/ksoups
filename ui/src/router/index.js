@@ -45,6 +45,24 @@ const routes = [
         ],
     },
     {
+        path: '/center',
+        name: 'center',
+        component: () => import('../views/center.vue'),
+        children: [
+            {
+                path: 'keys',
+                name: 'keys',
+                component: () => import('../views/center/keys.vue')
+            },
+            {
+                path: 'monitor',
+                name: 'monitor',
+                component: () => import('../views/center/monitor.vue')
+            }
+        ]
+    }
+    ,
+    {
         path: '/ssh',
         name: 'ssh',
         component: () => import('../views/ssh.vue'),

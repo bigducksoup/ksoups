@@ -41,11 +41,12 @@ func InitApiServer(port string, ctx context.Context) {
 		}
 	}()
 
-	<-ctx.Done()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server Shutdown:", err)
-	}
-	log.Println("Server exiting")
+	go func() {
+		<-ctx.Done()
+		if err := srv.Shutdown(ctx); err != nil {
+			log.Fatal("Server Shutdown:", err)
+		}
+		log.Println("Server exited")
+	}()
 
 }
