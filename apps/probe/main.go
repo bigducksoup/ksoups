@@ -3,6 +3,7 @@ package main
 import (
 	"apps/probe/config"
 	"apps/probe/connect"
+	"apps/probe/service"
 	fileservice "apps/probe/service/fs"
 	"context"
 	"flag"
@@ -26,8 +27,9 @@ func main() {
 		panic(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	service.Init()
 
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	go connect.InitConnect(config.Conf.CenterAddr, ctx)

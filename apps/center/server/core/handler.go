@@ -18,6 +18,7 @@ func HandleRESPONSE(msg message.Msg, serverContext *Context) error {
 	return nil
 }
 
+// TODO HandleHEARTBEAT is not implemented
 //func HandleHEARTBEAT(msg message.Msg) {
 //
 //	addr := string(msg.Data)

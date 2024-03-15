@@ -27,6 +27,7 @@ const { tableData,columns } = useDataTable([
   {
     title: '公钥',
     key: 'public_key',
+
     width: 200
   },
   {

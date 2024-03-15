@@ -108,3 +108,5 @@ func (n *NormalShortcutRunner) Run(sc model.Shortcut) (RunResult, error) {
 
 	return res, nil
 }
+
+// TODO interactive run, like run command or script on ssh

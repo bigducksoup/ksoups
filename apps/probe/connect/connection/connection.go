@@ -1,7 +1,8 @@
-package common
+package connection
 
 import (
 	"apps/common/message"
+	"apps/common/message/data"
 	"apps/common/utils"
 	"bufio"
 
@@ -126,7 +127,8 @@ func (c *Connection) RespErr(id string, err error) {
 
 }
 
-func (c *Connection) Ping() bool {
+// TODO : 重构
+func (c *Connection) Ping(metrics *data.PerformanceMetrics) bool {
 
 	log.Println("ping center")
 

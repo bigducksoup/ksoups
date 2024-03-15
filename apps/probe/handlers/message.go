@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"apps/common/message"
-	"apps/probe/common"
+	"apps/probe/connect/connection"
 	"errors"
 	"log"
 )
 
-func HandleMessage(msg message.Msg, connection *common.Connection) {
+func HandleMessage(msg message.Msg, connection *connection.Connection) {
 
 	policy, ok := msgHandlePolicy[msg.Type]
 
@@ -20,11 +20,11 @@ func HandleMessage(msg message.Msg, connection *common.Connection) {
 
 }
 
-var msgHandlePolicy = map[message.Type]func(msg message.Msg, connection *common.Connection){
+var msgHandlePolicy = map[message.Type]func(msg message.Msg, connection *connection.Connection){
 	message.REQUEST: handleReq,
 }
 
-func handleReq(msg message.Msg, connection *common.Connection) {
+func handleReq(msg message.Msg, connection *connection.Connection) {
 
 	policy, ok := DataHandlePolicy[msg.DataType]
 

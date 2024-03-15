@@ -211,3 +211,7 @@ func handleOut(ctx context.Context, or *io.PipeReader, f func(b []byte), eh func
 	}
 
 }
+
+func DataPush(client *Client, c *gin.Context) {
+	//TODO push data to client, data may be probe performance data, interactive shortcut output, etc.
+}

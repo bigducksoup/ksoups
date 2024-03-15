@@ -4,8 +4,8 @@ import (
 	"apps/common/message"
 	"apps/common/message/data"
 	"apps/common/utils"
-	"apps/probe/common"
 	"apps/probe/config"
+	"apps/probe/connect/connection"
 	"apps/probe/handlers"
 	"context"
 	"encoding/json"
@@ -19,11 +19,11 @@ import (
 func InitConnect(addr string, ctx context.Context) {
 	InitInfo()
 
-	//create a connection
-	connection := common.CreateConnection(addr)
+	//create a
+	conn := connection.CreateConnection(addr)
 
 	//注册到 center
-	err := register(&connection)
+	err := register(&conn)
 
 	if err != nil {
 		log.Fatal(err)
@@ -32,7 +32,7 @@ func InitConnect(addr string, ctx context.Context) {
 	//notifyChan := make(chan any, 1)
 
 	//goroutine for heartbeat
-	//go heartBeat(&connection, core, &notifyChan)
+	//go heartBeat(&, core, &notifyChan)
 
 	for {
 		select {
@@ -42,18 +42,18 @@ func InitConnect(addr string, ctx context.Context) {
 			return
 
 		default:
-			msg, err := connection.Receive()
+			msg, err := conn.Receive()
 			if err == io.EOF {
 				flag := false
-				log.Println("connection lost")
+				log.Println(" lost")
 				for i := 0; i < 100; i++ {
 					time.Sleep(5 * time.Second)
 					log.Printf("trying reconnected to center,%d time", i)
-					err := connection.Reconnect()
+					err := conn.Reconnect()
 					if err != nil {
 						continue
 					}
-					err = register(&connection)
+					err = register(&conn)
 					if err != nil {
 						continue
 					}
@@ -72,23 +72,24 @@ func InitConnect(addr string, ctx context.Context) {
 				//}
 				//
 				//if notify == 0 {
-				//	log.Fatal(errors.New("connection lost,reconnect failed after 10 times retry"))
+				//	log.Fatal(errors.New(" lost,reconnect failed after 10 times retry"))
 				//}
 			}
 			if err != nil {
 				log.Println(err)
 				continue
 			}
-			go handlers.HandleMessage(msg, &connection)
+			go handlers.HandleMessage(msg, &conn)
 		}
 
 	}
 
 }
 
+// TODO heartBeat need to be refactored
 // do heart beat
 // if beat did not receive response, try to reconnect
-func heartBeat(connection *common.Connection, ctx context.Context, notifyChan *chan any) {
+func heartBeat(connection *connection.Connection, ctx context.Context, notifyChan *chan any) {
 
 	//create a ticker
 	ticker := time.NewTicker(3 * time.Second)
@@ -122,8 +123,8 @@ func heartBeat(connection *common.Connection, ctx context.Context, notifyChan *c
 			ticker.Stop()
 			return
 		case <-ticker.C:
-			//di ping
-			ping := connection.Ping()
+			//TODO if center need performance metrics data ,send it
+			ping := connection.Ping(&data.PerformanceMetrics{})
 			if ping {
 				continue
 			}
@@ -136,7 +137,7 @@ func heartBeat(connection *common.Connection, ctx context.Context, notifyChan *c
 
 var registerInfo data.RegisterInfo
 
-func register(connection *common.Connection) error {
+func register(connection *connection.Connection) error {
 
 	if config.Conf.Name == "" {
 		config.Conf.Name = strings.Split(connection.LocalAddr, ":")[0]
