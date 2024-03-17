@@ -284,10 +284,16 @@ func (f *File) Flush() error {
 
 	res := strings.Join(f.Content, "\n")
 
-	err := os.WriteFile(f.Path, []byte(res), 0644)
-
+	// add O_SYNC to ensure the file is written to disk
+	file, err := os.OpenFile(f.Path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC|os.O_SYNC, 0644)
 	if err != nil {
 		return err
 	}
-	return nil
+	_, err = file.Write([]byte(res))
+
+	if err1 := file.Close(); err1 != nil && err == nil {
+		err = err1
+	}
+
+	return err
 }
