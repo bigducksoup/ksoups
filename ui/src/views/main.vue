@@ -1,10 +1,9 @@
 <script setup>
 
 import {useRouter} from 'vue-router'
-
+import {initMessagePush} from "../hooks/websocket.js";
 const router = useRouter()
-
-
+initMessagePush()
 
 
 </script>

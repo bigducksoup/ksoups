@@ -8,4 +8,4 @@ const baseHost = ref(import.meta.env.VITE_APP_BASE_HOST)
 export {
     baseUrl,
     baseHost
-} 
+}

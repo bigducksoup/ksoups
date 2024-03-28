@@ -44,8 +44,8 @@ func (c *Client) setup(ctx context.Context) error {
 		return errors.New("messageHandleFunc is nil")
 	}
 
-	c.handleSend(ctx)
-	c.handleReceive(ctx, c.messageHandleFunc)
+	c.handleSend(context.WithoutCancel(ctx))
+	c.handleReceive(context.WithoutCancel(ctx), c.messageHandleFunc)
 
 	return nil
 }
@@ -64,6 +64,9 @@ func (c *Client) handleReceive(ctx context.Context, onReceiveMessage func(int, [
 			default:
 				messageType, bytes, err := c.Conn.ReadMessage()
 				onReceiveMessage(messageType, bytes, err)
+				if err != nil {
+					return
+				}
 			}
 		}
 	}()
@@ -76,7 +79,7 @@ func (c *Client) handleSend(ctx context.Context) {
 			select {
 			case msg := <-c.send:
 				if msg == nil {
-					log.Println("未知原因，chan c.send 关闭")
+					log.Println("chan c.send 关闭")
 					return
 				}
 				err := c.Conn.WriteMessage(msg.messageType, msg.data)
