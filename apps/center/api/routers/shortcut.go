@@ -21,6 +21,9 @@ func InitShortcutRouter(e *gin.RouterGroup, middlewares ...gin.HandlerFunc) {
 		// 运行快捷指令
 		shortcutGroup.POST("/run", handler.RunShortcut)
 
+		// 实时快捷指令
+		shortcutGroup.POST("/realtime/run", handler.RealTimeRunShortcut)
+
 		// 删除快捷指令
 		shortcutGroup.DELETE("/delete", handler.DeleteShortcut)
 

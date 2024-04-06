@@ -27,6 +27,7 @@ type CenterServerOptions struct {
 	RegisterTimeOut time.Duration
 	Port            int
 	Context         context.Context
+	HandlePolicy    map[message.Type]func(msg message.Msg, serverContext *Context) error
 }
 
 func (c *CenterServer) Start() error {
@@ -86,10 +87,8 @@ func CreateCenterServer(options CenterServerOptions) *CenterServer {
 		Port:    options.Port,
 		context: options.Context,
 		handler: CenterServerWorker{
-			context: context.WithoutCancel(options.Context),
-			msgHandlePolicies: map[message.Type]func(msg message.Msg, serverContext *Context) error{
-				message.RESPONSE: HandleRESPONSE,
-			},
+			context:           context.WithoutCancel(options.Context),
+			msgHandlePolicies: options.HandlePolicy,
 		},
 	}
 }

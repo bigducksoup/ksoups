@@ -2,58 +2,14 @@ package shortcut
 
 import (
 	"apps/center/model"
+	"apps/common/message"
 	"apps/common/message/data"
-	"context"
-	"os/exec"
-	"strings"
-	"time"
+	"apps/probe/connect"
+	"apps/probe/function"
+	"encoding/json"
+	"io"
+	"log"
 )
-
-func executeCmdWithTimeout(cmd string, timeout time.Duration) (string, error) {
-
-	//超时上下文
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
-	defer cancel()
-
-	cmdSplits := strings.Split(cmd, " ")
-
-	command := exec.CommandContext(ctx, cmdSplits[0], cmdSplits[1:]...)
-
-	bytes, err := command.CombinedOutput()
-
-	if err != nil {
-		if ctx.Err() != nil {
-			return string(bytes), nil
-		}
-		return string(bytes), err
-	}
-
-	return string(bytes), nil
-
-}
-
-func executeCmdIgnoreResult(cmd string, timeout time.Duration) error {
-
-	//超时上下文
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
-	defer cancel()
-
-	cmdSplits := strings.Split(cmd, " ")
-
-	command := exec.CommandContext(ctx, cmdSplits[0], cmdSplits[1:]...)
-
-	err := command.Start()
-
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		err = command.Wait()
-	}()
-
-	return nil
-}
 
 func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 
@@ -65,9 +21,10 @@ func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 	execResult := data.ShortcutRunResp{
 		Ok: true,
 	}
+
 	//仅运行
 	if shortcut.JustRun {
-		err := executeCmdIgnoreResult(shortcut.Payload, shortcut.Timeout)
+		err := function.ExecuteCmdIgnoreResult(shortcut.Payload, shortcut.Timeout)
 
 		if err != nil {
 			execResult.Ok = false
@@ -76,7 +33,7 @@ func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 		}
 
 	} else {
-		result, err := executeCmdWithTimeout(shortcut.Payload, shortcut.Timeout)
+		result, err := function.ExecuteCmdWithTimeout(shortcut.Payload, shortcut.Timeout)
 
 		if err != nil {
 			execResult.Ok = false
@@ -89,4 +46,107 @@ func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 
 	return execResult
 
+}
+
+func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunResp {
+
+	err, outPipe, errPipe := function.ExecuteCmdRealTime(runMeta.Payload, runMeta.Timeout)
+
+	if err != nil {
+		return data.RealTimeShortcutRunResp{
+			Ok:    false,
+			RunId: runMeta.Id,
+			Err:   err.Error(),
+		}
+	}
+
+	// handle pipeline output
+	handlePipe := func(pipe *io.ReadCloser, processData func([]byte)) {
+
+		buf := make([]byte, 1024)
+
+		for {
+			// 从 pipe 中读取数据
+			n, err := (*pipe).Read(buf)
+			if err != nil {
+				if err != io.EOF {
+					log.Printf("An error occurred: %v", err)
+				}
+				break
+			}
+
+			// 处理读取的数据
+			processData(buf[:n])
+		}
+		// 关闭 pipe
+		if err := (*pipe).Close(); err != nil {
+			log.Printf("Failed to close: %v", err)
+		}
+	}
+
+	// async handle stdout pipeline
+	go handlePipe(outPipe, func(bytes []byte) {
+
+		outPut := data.RealTimeShortcutOutPut{
+			Type:    0,
+			Payload: bytes,
+		}
+
+		marshal, e := json.Marshal(outPut)
+
+		if e != nil {
+			(*outPipe).Close()
+			return
+		}
+
+		msg := message.Msg{
+			Type:     message.PROACTIVE_PUSH,
+			Id:       runMeta.Id,
+			Data:     marshal,
+			ErrMark:  false,
+			DataType: message.SHORTCUT_OUTPUT,
+		}
+
+		e = connect.Connection.SendMessage(msg)
+
+		if e != nil {
+			(*outPipe).Close()
+		}
+	})
+
+	// async handle stderr pipeline
+	go handlePipe(errPipe, func(bytes []byte) {
+
+		outPut := data.RealTimeShortcutOutPut{
+			Type:    1,
+			Payload: bytes,
+		}
+
+		marshal, e := json.Marshal(outPut)
+
+		if e != nil {
+			(*errPipe).Close()
+			return
+		}
+
+		msg := message.Msg{
+			Type:     message.PROACTIVE_PUSH,
+			Id:       runMeta.Id,
+			Data:     marshal,
+			ErrMark:  false,
+			DataType: message.SHORTCUT_OUTPUT,
+		}
+
+		e = connect.Connection.SendMessage(msg)
+
+		if e != nil {
+			(*errPipe).Close()
+		}
+	})
+
+	return data.RealTimeShortcutRunResp{
+		Ok:    true,
+		RunId: runMeta.Id,
+		Err:   "",
+	}
 }

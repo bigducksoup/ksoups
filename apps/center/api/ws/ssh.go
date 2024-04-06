@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"apps/center/api/ws/base"
 	"apps/center/global"
 	"apps/center/model"
 	"apps/center/ssh"
@@ -12,12 +13,12 @@ import (
 	"log"
 )
 
-func DoSSH(client *Client, c *gin.Context) {
+func DoSSH(client *base.Client, c *gin.Context) {
 
 	id, a := c.GetQuery("sshInfoId")
 
 	if !(a) {
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		return
 	}
 
@@ -25,7 +26,7 @@ func DoSSH(client *Client, c *gin.Context) {
 	rows := global.DB.Where("id = ?", id).First(&sshInfo).RowsAffected
 
 	if rows == 0 {
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		return
 	}
 
@@ -33,7 +34,7 @@ func DoSSH(client *Client, c *gin.Context) {
 	session, err := ssh.NewSession(sshInfo.AddrPort, sshInfo.Username, sshInfo.Password)
 
 	if err != nil {
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		return
 	}
 
@@ -45,7 +46,7 @@ func DoSSH(client *Client, c *gin.Context) {
 	w, err := session.OpenShell(ow, ew)
 
 	if err != nil {
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		return
 	}
 
@@ -57,7 +58,7 @@ func DoSSH(client *Client, c *gin.Context) {
 		if err != nil || !(messageType == websocket.TextMessage || messageType == websocket.BinaryMessage) {
 			log.Println("err occur !!!" + err.Error())
 			cancel()
-			Ctx.deRegChan <- client
+			Ctx.DeRegChan <- client
 			session.Close()
 			ow.Close()
 			or.Close()
@@ -69,7 +70,7 @@ func DoSSH(client *Client, c *gin.Context) {
 		if err != nil {
 			log.Println("err occur !!!" + err.Error())
 			cancel()
-			Ctx.deRegChan <- client
+			Ctx.DeRegChan <- client
 			session.Close()
 			ow.Close()
 			or.Close()
@@ -78,11 +79,11 @@ func DoSSH(client *Client, c *gin.Context) {
 		}
 
 	})
-	err = client.setup(ctx)
+	err = client.Setup(ctx)
 
 	if err != nil {
 		cancel()
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		session.Close()
 		ow.Close()
 		or.Close()
@@ -96,7 +97,7 @@ func DoSSH(client *Client, c *gin.Context) {
 	}, func(err error) {
 		cancel()
 		session.Close()
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		ow.Close()
 		or.Close()
 		er.Close()
@@ -108,7 +109,7 @@ func DoSSH(client *Client, c *gin.Context) {
 	}, func(err error) {
 		cancel()
 		session.Close()
-		Ctx.deRegChan <- client
+		Ctx.DeRegChan <- client
 		ow.Close()
 		or.Close()
 		er.Close()

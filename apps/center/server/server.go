@@ -5,6 +5,7 @@ import (
 	"apps/center/model"
 	"apps/center/server/core"
 	"apps/center/service"
+	"apps/common/message"
 	"apps/common/message/data"
 	"apps/common/utils"
 	"context"
@@ -23,6 +24,10 @@ func InitCenterServer(port int, ctx context.Context) {
 		ResponseTimeOut: 10 * time.Minute,
 		Port:            port,
 		Context:         ctx,
+		HandlePolicy: map[message.Type]func(msg message.Msg, serverContext *core.Context) error{
+			message.RESPONSE:       HandleRESPONSE,
+			message.PROACTIVE_PUSH: HandleProActivePush,
+		},
 	})
 
 	centerServer.SetAuthenticateMethod(func(info data.RegisterInfo) error {

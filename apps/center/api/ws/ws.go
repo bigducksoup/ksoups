@@ -1,22 +1,25 @@
 package ws
 
-import "context"
-
-var Ctx *Context
+import (
+	"apps/center/api/ws/base"
+	"context"
+)
 
 var Pusher *MessagePusher
+var Ctx *base.Context
 
 func Init() {
 
 	Pusher = &MessagePusher{
-		client:  make([]*Client, 0),
-		regChan: make(chan *Client),
-		msgChan: make(chan Msg, 5),
-		context: context.TODO(),
+		Client:  make([]*base.Client, 0),
+		MsgChan: make(chan Msg, 5),
+		RegChan: make(chan *base.Client, 5),
+		Context: context.TODO(),
 	}
 
 	Pusher.StartWork()
 
-	Ctx = newContext()
-	Ctx.setup()
+	Ctx = base.NewContext()
+	Ctx.Setup()
+
 }

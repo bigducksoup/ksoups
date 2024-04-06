@@ -2,7 +2,7 @@ package main
 
 import (
 	"apps/probe/config"
-	"apps/probe/connect"
+	"apps/probe/connect/base"
 	fileservice "apps/probe/service/fs"
 	"context"
 	"flag"
@@ -30,7 +30,7 @@ func main() {
 
 	defer cancel()
 
-	go connect.InitConnect(config.Conf.CenterAddr, ctx)
+	go base.InitConnect(config.Conf.CenterAddr, ctx)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

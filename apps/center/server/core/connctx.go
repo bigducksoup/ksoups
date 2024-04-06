@@ -164,6 +164,10 @@ func (c *Context) SendMsg(id string, msg message.Msg) error {
 	return err
 }
 
+// SendMsgExpectRes send msg and receive a response
+// id probeId string
+// data msg any
+// dataType type of data message.DataType
 func (c *Context) SendMsgExpectRes(id string, data any, dataType message.DataType) (res []byte, err error) {
 
 	bytes, _ := json.Marshal(data)

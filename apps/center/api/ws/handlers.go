@@ -2,6 +2,7 @@ package ws
 
 import (
 	"apps/center/api/session"
+	"apps/center/api/ws/base"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-var AppMap = map[string]func(client *Client, c *gin.Context){
+var AppMap = map[string]func(client *base.Client, c *gin.Context){
 	"ssh": DoSSH,
 	"msg": DoMessagePush,
 }
@@ -65,10 +66,10 @@ func HandleWS(c *gin.Context) {
 	}
 
 	// 创建客户端
-	client := NewClient(conn)
+	client := base.NewClient(conn)
 
 	// 注册到Context
-	Ctx.regChan <- client
+	Ctx.RegChan <- client
 
 	if err != nil {
 		c.Status(http.StatusInternalServerError)

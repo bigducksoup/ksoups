@@ -1,4 +1,4 @@
-package ws
+package base
 
 import (
 	"apps/common/utils"
@@ -38,7 +38,7 @@ func (c *Client) SendJSON(obj any) {
 	c.sendJSON <- obj
 }
 
-func (c *Client) setup(ctx context.Context) error {
+func (c *Client) Setup(ctx context.Context) error {
 
 	if c.messageHandleFunc == nil {
 		return errors.New("messageHandleFunc is nil")

@@ -1,4 +1,4 @@
-package ws
+package base
 
 import (
 	"errors"
@@ -7,17 +7,17 @@ import (
 )
 
 type Context struct {
-	clients   map[string]*Client
-	regChan   chan *Client
-	deRegChan chan *Client
+	Clients   map[string]*Client
+	RegChan   chan *Client
+	DeRegChan chan *Client
 }
 
 func (c *Context) SendMsg(id string, messageType int, data []byte) error {
 
-	client, ok := c.clients[id]
+	client, ok := c.Clients[id]
 
 	if !ok {
-		return errors.New("could not find client that id = " + id)
+		return errors.New("could not find Client that id = " + id)
 	}
 
 	client.send <- &wsMsg{
@@ -28,21 +28,21 @@ func (c *Context) SendMsg(id string, messageType int, data []byte) error {
 	return nil
 }
 
-// setup 初始化ws.Context
-func (c *Context) setup() {
+// Setup 初始化ws.Context
+func (c *Context) Setup() {
 	go func() {
 		for {
 			select {
-			case client := <-c.regChan:
-				c.clients[client.Id] = client
+			case client := <-c.RegChan:
+				c.Clients[client.Id] = client
 				log.Println(client.Id + " register to WS CTX")
-			case client := <-c.deRegChan:
-				_, ok := c.clients[client.Id]
+			case client := <-c.DeRegChan:
+				_, ok := c.Clients[client.Id]
 				if ok {
 					close(client.send)
 					client.Conn.WriteMessage(websocket.CloseInternalServerErr, []byte("something going wrong"))
 					client.Conn.Close()
-					delete(c.clients, client.Id)
+					delete(c.Clients, client.Id)
 					log.Println(client.Id + " deregister to WS CTX")
 				}
 			}
@@ -50,10 +50,10 @@ func (c *Context) setup() {
 	}()
 }
 
-func newContext() *Context {
+func NewContext() *Context {
 	return &Context{
-		clients:   make(map[string]*Client),
-		regChan:   make(chan *Client),
-		deRegChan: make(chan *Client),
+		Clients:   make(map[string]*Client),
+		RegChan:   make(chan *Client),
+		DeRegChan: make(chan *Client),
 	}
 }

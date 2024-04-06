@@ -87,10 +87,11 @@ func DecodedToBytes(reader *bufio.Reader) ([]byte, error) {
 type Type int
 
 const (
-	REQUEST   Type = 1
-	RESPONSE  Type = 2
-	HEARTBEAT Type = 3
-	REGISTER  Type = 4
+	REQUEST        Type = 1
+	RESPONSE       Type = 2
+	HEARTBEAT      Type = 3
+	REGISTER       Type = 4
+	PROACTIVE_PUSH Type = 5
 )
 
 type Msg struct {

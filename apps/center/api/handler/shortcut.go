@@ -127,6 +127,33 @@ func RunShortcut(c *gin.Context) {
 	}))
 }
 
+// RealTimeRunShortcut realtime run shortcut
+// push result using websocket
+// TODO test
+func RealTimeRunShortcut(c *gin.Context) {
+
+	scId, ok := c.GetQuery("shortcutId")
+
+	if !ok {
+		c.JSON(http.StatusOK, response.ParamsError())
+		return
+	}
+
+	// call real time run
+	runId, err := service.ShortcutRUN.RealTimeRun(scId)
+
+	if err != nil {
+		c.JSON(http.StatusOK, response.Fail(err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response.Success(gin.H{
+		"ok":    true,
+		"runId": runId,
+	}))
+
+}
+
 // ShortcutRunHistory 快捷方式运行历史
 // Params: shortcutId 快捷方式id
 // Response: 200，“success”， []model.ShortcutExecLog

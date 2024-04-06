@@ -5,7 +5,9 @@ import (
 	"apps/center/model"
 	"apps/common/message"
 	"apps/common/message/data"
+	"apps/common/utils"
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -15,6 +17,7 @@ type Runner struct {
 func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 
 	oneLineShortcutRun := data.ShortcutRun{
+		Id:      utils.UUID(),
 		Type:    sc.Type,
 		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
 		JustRun: sc.JustRun,
@@ -40,6 +43,37 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	}
 	return resp.StdOut, true
 
+}
+
+// RealTimeRun run shortcut in a realtime way
+// after call it, the output of shortcut run operation will be pushed to center.
+// center handle it and push to ui by using websocket
+func (s *Runner) RealTimeRun(sc model.Shortcut) (id string, err error) {
+
+	shortcutRun := data.ShortcutRun{
+		Id:       utils.UUID(),
+		Type:     sc.Type,
+		Timeout:  time.Duration(sc.Timeout) * time.Millisecond,
+		JustRun:  false,
+		Payload:  sc.Payload,
+		RealTime: true,
+	}
+
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT)
+
+	resp := data.RealTimeShortcutRunResp{}
+
+	err = json.Unmarshal(bytes, &resp)
+
+	if err != nil {
+		return "", err
+	}
+
+	if !resp.Ok {
+		return "", errors.New(resp.Err)
+	}
+
+	return resp.RunId, nil
 }
 
 func (s *Runner) ResultRun(sc *model.Shortcut) (*data.ShortcutRunResp, error) {

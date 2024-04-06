@@ -21,7 +21,7 @@ func (r *RUNService) Run(id string) (out string, error error) {
 	tx := r.Db.First(&sc, "id = ?", id)
 
 	if tx.Error != nil {
-		return "", error
+		return "", tx.Error
 	}
 
 	out, ok := r.Runner.Run(sc)
@@ -44,6 +44,35 @@ func (r *RUNService) Run(id string) (out string, error error) {
 		return
 	}
 	return
+}
+
+func (r *RUNService) RealTimeRun(id string) (runId string, err error) {
+	execTime := time.Now()
+	sc := model.Shortcut{}
+	tx := r.Db.First(&sc, "id = ?", id)
+
+	if tx.Error != nil {
+		return "", tx.Error
+	}
+
+	runId, err = r.Runner.RealTimeRun(sc)
+
+	if err != nil {
+		return "", err
+	}
+
+	if r.Db != nil {
+		r.Db.Create(&model.ShortcutExecLog{
+			Id:          runId,
+			ShortcutId:  id,
+			Out:         "",
+			OK:          false,
+			CreateTime:  time.Now(),
+			ExecuteTime: execTime,
+		})
+	}
+
+	return runId, nil
 }
 
 func (r *RUNService) RunHistory(id string) (runHistory []model.ShortcutExecLog, error error) {

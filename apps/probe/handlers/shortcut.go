@@ -15,9 +15,16 @@ func handleRunSC(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	shortcutRunResp := shortcutService.ExecuteShortcut(scRun)
+	var result any
 
-	bytes, err := json.Marshal(shortcutRunResp)
+	//check if run in real time way
+	if scRun.RealTime {
+		result = shortcutService.ExecuteShortcutRealTime(scRun)
+	} else {
+		result = shortcutService.ExecuteShortcut(scRun)
+	}
+
+	bytes, err := json.Marshal(result)
 
 	if err != nil {
 		return nil, err
