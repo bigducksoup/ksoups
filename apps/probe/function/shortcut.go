@@ -54,11 +54,7 @@ func ExecuteCmdIgnoreResult(cmd string, timeout time.Duration) error {
 	return nil
 }
 
-func ExecuteCmdRealTime(cmd string, timeout time.Duration) (err error, outPipe *io.ReadCloser, errPipe *io.ReadCloser) {
-
-	//超时上下文
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
-	defer cancel()
+func ExecuteCmdRealTime(ctx context.Context, cmd string, timeout time.Duration) (err error, outPipe *io.ReadCloser, errPipe *io.ReadCloser) {
 
 	cmdSplits := strings.Split(cmd, " ")
 
@@ -69,11 +65,6 @@ func ExecuteCmdRealTime(cmd string, timeout time.Duration) (err error, outPipe *
 	} else {
 		command = exec.CommandContext(ctx, cmdSplits[0], cmdSplits[1:]...)
 	}
-	err = command.Start()
-
-	if err != nil {
-		return err, nil, nil
-	}
 
 	stdoutPipe, err := command.StdoutPipe()
 
@@ -82,6 +73,12 @@ func ExecuteCmdRealTime(cmd string, timeout time.Duration) (err error, outPipe *
 	}
 
 	stderrPipe, err := command.StderrPipe()
+
+	if err != nil {
+		return err, nil, nil
+	}
+
+	err = command.Start()
 
 	if err != nil {
 		return err, nil, nil

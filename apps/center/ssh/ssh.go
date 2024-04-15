@@ -7,18 +7,15 @@ import (
 )
 
 type SSHSession struct {
-	Config  *ssh.ClientConfig
-	Session *ssh.Session
+	Config     *ssh.ClientConfig
+	Session    *ssh.Session
+	StdinPipe  *io.WriteCloser
+	StdoutPipe *io.PipeReader
+	StderrPipe *io.PipeReader
 }
 
-func (s *SSHSession) OpenShell(out io.Writer, errOut io.Writer) (pipe *io.WriteCloser, err error) {
-	p, err := s.Session.StdinPipe()
-	s.Session.Stdout = out
-	s.Session.Stderr = errOut
+func (s *SSHSession) OpenShell() (err error) {
 
-	if err != nil {
-		return nil, err
-	}
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          1,     // disable echoing
 		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
@@ -26,13 +23,13 @@ func (s *SSHSession) OpenShell(out io.Writer, errOut io.Writer) (pipe *io.WriteC
 	}
 	err = s.Session.RequestPty("xterm", 40, 80, modes)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	err = s.Session.Shell()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &p, nil
+	return nil
 }
 
 func (s *SSHSession) Wait() error {
@@ -40,6 +37,7 @@ func (s *SSHSession) Wait() error {
 }
 
 func (s *SSHSession) Close() error {
+	(*s.StdinPipe).Close()
 	return s.Session.Close()
 }
 
@@ -71,5 +69,26 @@ func NewSession(address string, username string, password string) (*SSHSession, 
 	if err != nil {
 		return nil, err
 	}
-	return &SSHSession{Config: &config, Session: session}, nil
+
+	pipe, err := session.StdinPipe()
+
+	if err != nil {
+		return nil, err
+	}
+
+	stdoutR, stdoutW := io.Pipe()
+	session.Stdout = stdoutW
+
+	stderrR, stderrW := io.Pipe()
+	session.Stderr = stderrW
+
+	s := &SSHSession{
+		Config:     &config,
+		Session:    session,
+		StdinPipe:  &pipe,
+		StdoutPipe: stdoutR,
+		StderrPipe: stderrR,
+	}
+
+	return s, nil
 }

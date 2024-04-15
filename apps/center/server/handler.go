@@ -36,9 +36,9 @@ func HandleProActivePush(msg message.Msg, serverContext *core.Context) error {
 
 		// TODO record out put and update info in sqlite
 
-		ws.Pusher.SendMsg(ws.Msg{
+		ws.Pusher.SendMsg(ws.Msg[string]{
 			Type:    0,
-			Payload: outPut,
+			Payload: string(msg.Data),
 		})
 
 		if err != nil {

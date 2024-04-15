@@ -30,7 +30,8 @@ type RealTimeShortcutOutPut struct {
 	// 0 : stdout
 	// 1 : stderr
 	Type    int    `json:"type"`
-	Payload []byte `json:"payload"`
+	Payload string `json:"payload"`
+	RunId   string `json:"runId"`
 }
 
 type CreateScript struct {

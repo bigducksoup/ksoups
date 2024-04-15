@@ -68,9 +68,6 @@ func HandleWS(c *gin.Context) {
 	// 创建客户端
 	client := base.NewClient(conn)
 
-	// 注册到Context
-	Ctx.RegChan <- client
-
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

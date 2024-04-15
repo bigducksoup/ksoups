@@ -6,6 +6,7 @@ import (
 	"apps/common/message/data"
 	"apps/probe/connect"
 	"apps/probe/function"
+	"context"
 	"encoding/json"
 	"io"
 	"log"
@@ -50,7 +51,10 @@ func ExecuteShortcut(shortcut data.ShortcutRun) data.ShortcutRunResp {
 
 func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunResp {
 
-	err, outPipe, errPipe := function.ExecuteCmdRealTime(runMeta.Payload, runMeta.Timeout)
+	ctx, cancelFunc := context.WithTimeout(context.TODO(), runMeta.Timeout)
+	defer cancelFunc()
+
+	err, outPipe, errPipe := function.ExecuteCmdRealTime(context.WithoutCancel(ctx), runMeta.Payload, runMeta.Timeout)
 
 	if err != nil {
 		return data.RealTimeShortcutRunResp{
@@ -89,7 +93,8 @@ func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunR
 
 		outPut := data.RealTimeShortcutOutPut{
 			Type:    0,
-			Payload: bytes,
+			Payload: string(bytes),
+			RunId:   runMeta.Id,
 		}
 
 		marshal, e := json.Marshal(outPut)
@@ -119,7 +124,8 @@ func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunR
 
 		outPut := data.RealTimeShortcutOutPut{
 			Type:    1,
-			Payload: bytes,
+			Payload: string(bytes),
+			RunId:   runMeta.Id,
 		}
 
 		marshal, e := json.Marshal(outPut)

@@ -2,7 +2,6 @@ package base
 
 import (
 	"apps/common/utils"
-	"context"
 	"errors"
 	"github.com/gorilla/websocket"
 	"log"
@@ -17,12 +16,13 @@ type Client struct {
 	Id   string
 	Conn *websocket.Conn
 	// Buffered channel of outbound messages.
-	send              chan *wsMsg
-	sendJSON          chan any
-	messageHandleFunc func(messageType int, bytes []byte, err error)
+	send      chan *wsMsg
+	sendJSON  chan any
+	closeChan chan struct{}
 }
 
 func (c *Client) Send(messageType int, data []byte) {
+
 	msg := &wsMsg{
 		messageType: messageType,
 		data:        data,
@@ -30,50 +30,20 @@ func (c *Client) Send(messageType int, data []byte) {
 	if msg == nil {
 		log.Println("nil message ??????")
 	}
-
 	c.send <- msg
 }
 
-func (c *Client) SendJSON(obj any) {
+func (c *Client) SendJSON(obj any) error {
 	c.sendJSON <- obj
-}
-
-func (c *Client) Setup(ctx context.Context) error {
-
-	if c.messageHandleFunc == nil {
-		return errors.New("messageHandleFunc is nil")
-	}
-
-	c.handleSend(context.WithoutCancel(ctx))
-	c.handleReceive(context.WithoutCancel(ctx), c.messageHandleFunc)
-
 	return nil
 }
 
-func (c *Client) SetMessageHandleFunc(f func(messageType int, bytes []byte, err error)) {
-	c.messageHandleFunc = f
-}
+func (c *Client) Setup(onReceiveMessage func(int, []byte, error)) error {
 
-// handleReceive 处理接收，回调onReceiveMessage
-func (c *Client) handleReceive(ctx context.Context, onReceiveMessage func(int, []byte, error)) {
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-				messageType, bytes, err := c.Conn.ReadMessage()
-				onReceiveMessage(messageType, bytes, err)
-				if err != nil {
-					return
-				}
-			}
-		}
-	}()
-}
+	if onReceiveMessage == nil {
+		return errors.New("messageHandleFunc is nil")
+	}
 
-// handleSend 处理发送
-func (c *Client) handleSend(ctx context.Context) {
 	go func() {
 		for {
 			select {
@@ -91,18 +61,35 @@ func (c *Client) handleSend(ctx context.Context) {
 				if err != nil {
 					return
 				}
-			case <-ctx.Done():
+			case <-c.closeChan:
 				return
 			}
 		}
 	}()
+
+	go func() {
+		for {
+			messageType, bytes, err := c.Conn.ReadMessage()
+			onReceiveMessage(messageType, bytes, err)
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (c *Client) Close() {
+	c.closeChan <- struct{}{}
 }
 
 func NewClient(conn *websocket.Conn) *Client {
 	return &Client{
-		Id:                utils.UUID(),
-		Conn:              conn,
-		send:              make(chan *wsMsg),
-		messageHandleFunc: nil,
+		Id:        utils.UUID(),
+		Conn:      conn,
+		send:      make(chan *wsMsg, 10),
+		sendJSON:  make(chan any, 10),
+		closeChan: make(chan struct{}, 1),
 	}
 }

@@ -2,12 +2,8 @@ package test
 
 import (
 	"apps/center/ssh"
-	"bufio"
-
-	"fmt"
-	"io"
+	"log"
 	"testing"
-	"time"
 )
 
 func TestSSH(t *testing.T) {
@@ -19,47 +15,11 @@ func TestSSH(t *testing.T) {
 	}
 	defer session.Close()
 
-	or, ow := io.Pipe()
-	er, ew := io.Pipe()
+	session.OpenShell()
 
-	pipe, err := session.OpenShell(ow, ew)
+	bytes := make([]byte, 1024)
+	n, err := session.StdoutPipe.Read(bytes)
 
-	if err != nil {
-		t.Fatal(err)
-	}
+	log.Println(string(bytes[:n]))
 
-	go func() {
-		reader := bufio.NewReader(or)
-		for {
-			b, e := reader.ReadByte()
-			if e != nil {
-				break
-			}
-			fmt.Print(string(b))
-		}
-	}()
-
-	go func() {
-		reader := bufio.NewReader(er)
-		for {
-			b, e := reader.ReadByte()
-			if e != nil {
-				break
-			}
-			fmt.Print(string(b))
-		}
-	}()
-
-	(*pipe).Write([]byte("ls -l\n"))
-
-	timer := time.NewTimer(5 * time.Second)
-
-	go func() {
-		select {
-		case <-timer.C:
-			session.Close()
-		}
-	}()
-
-	session.Wait()
 }
