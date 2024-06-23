@@ -58,6 +58,7 @@ func (s *MessagePusher) StartWork() {
 				for index := range s.Client {
 					if s.Client[index] == client {
 						s.Client = append(s.Client[0:index], s.Client[index+1:]...)
+						client.Close()
 						break
 					}
 				}
@@ -96,7 +97,7 @@ func DoMessagePush(client *base.Client, c *gin.Context) {
 
 	err := client.Setup(func(messageType int, bytes []byte, err error) {
 		if err != nil {
-			client.Close()
+			Pusher.unRegMe(client)
 		}
 	})
 

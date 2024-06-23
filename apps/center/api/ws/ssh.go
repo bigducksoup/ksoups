@@ -2,11 +2,11 @@ package ws
 
 import (
 	"apps/center/api/ws/base"
-	"apps/center/global"
-	"apps/center/model"
+	"apps/center/service"
 	"apps/center/ssh"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"io"
 	"log"
 )
 
@@ -18,11 +18,9 @@ func DoSSH(client *base.Client, c *gin.Context) {
 		return
 	}
 
-	// find ssh info detail
-	var sshInfo model.SSHInfo
-	rows := global.DB.Where("id = ?", id).First(&sshInfo).RowsAffected
+	sshInfo, ok := service.SSHCRUD.GetSSHInfo(id)
 
-	if rows == 0 {
+	if !ok {
 		return
 	}
 
@@ -52,9 +50,7 @@ func DoSSH(client *base.Client, c *gin.Context) {
 			return
 		}
 
-		n, err := (*session.StdinPipe).Write(bytes)
-
-		log.Println(n)
+		_, err = (*session.StdinPipe).Write(bytes)
 
 		if err != nil {
 			session.Close()
@@ -62,10 +58,10 @@ func DoSSH(client *base.Client, c *gin.Context) {
 		}
 	})
 
-	go func() {
+	handle := func(reader *io.PipeReader) {
 		for {
 			b := make([]byte, 1024)
-			n, rErr := session.StderrPipe.Read(b)
+			n, rErr := reader.Read(b)
 			if rErr != nil {
 				session.Close()
 				client.Close()
@@ -73,20 +69,10 @@ func DoSSH(client *base.Client, c *gin.Context) {
 			}
 			client.Send(websocket.BinaryMessage, b[:n])
 		}
-	}()
+	}
 
-	go func() {
-		for {
-			b := make([]byte, 1024)
-			n, rErr := session.StdoutPipe.Read(b)
-			if rErr != nil {
-				session.Close()
-				client.Close()
-				return
-			}
-			client.Send(websocket.BinaryMessage, b[:n])
-		}
-	}()
+	go handle(session.StderrPipe)
+	go handle(session.StdoutPipe)
 
 	session.Wait()
 

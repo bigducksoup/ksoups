@@ -27,22 +27,26 @@ func main() {
 	}
 	global.Conf = *conf
 
-	hp := global.Conf.WebApi.Port
-	sp := global.Conf.Center.Port
+	apiPort := global.Conf.WebApi.Port
+	rpcPort := global.Conf.Center.Port
+
 	db.InitDB()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	cs, csCancel := context.WithCancel(ctx)
-	server.InitCenterServer(sp, cs)
+	centerServer := server.InitCenterServer(rpcPort, cs)
+	global.CenterServer = centerServer
+
 	defer csCancel()
 
+	// init service
 	service.Init()
-
-	apic, apiCancel := context.WithCancel(ctx)
+	apiContext, apiCancel := context.WithCancel(ctx)
 	defer apiCancel()
 
-	api.InitApiServer(hp, apic)
+	// init api
+	api.InitApiServer(apiPort, apiContext)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

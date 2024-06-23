@@ -7,8 +7,9 @@ import (
 	"apps/common/message"
 	"apps/common/message/data"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func FileRead(c *gin.Context) {
@@ -31,7 +32,7 @@ func FileRead(c *gin.Context) {
 		Path: path,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READ_FILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -81,7 +82,7 @@ func FileModify(c *gin.Context) {
 		})
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFYFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFY_FILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -128,7 +129,7 @@ func FileCreate(c *gin.Context) {
 		Permission: fileCreateParams.Permission,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileCreate, message.CREATEFILE)
+	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileCreate, message.CREATE_FILE)
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
 		return

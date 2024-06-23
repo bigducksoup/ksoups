@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 )
 
-var DataHandlePolicy = map[message.DataType]func(data []byte) ([]byte, error){
+var DataHandlePolicy = map[message.DataType]func(data []byte) (any, message.DataType, error){
 	message.READDIR:       handleReadDir,
-	message.READFILE:      handleReadFile,
-	message.MODIFYFILE:    handleModifyFile,
-	message.CREATEFILE:    handleCreateFile,
+	message.READ_FILE:     handleReadFile,
+	message.MODIFY_FILE:   handleModifyFile,
+	message.CREATE_FILE:   handleCreateFile,
 	message.RUN_SHORTCUT:  handleRunSC,
 	message.CREATE_DIR:    handleCreateDir,
 	message.CREATE_SCRIPT: handleCreateScript,
-	message.DELETEFILE:    handleDeleteFile,
+	message.DELETE_FILE:   handleDeleteFile,
 }
 
 func readData[T any](data []byte) (T, error) {

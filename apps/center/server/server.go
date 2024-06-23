@@ -18,7 +18,7 @@ func MakeServer(options core.CenterServerOptions) *core.CenterServer {
 	return s
 }
 
-func InitCenterServer(port int, ctx context.Context) {
+func InitCenterServer(port int, ctx context.Context) *core.CenterServer {
 	centerServer := MakeServer(core.CenterServerOptions{
 		RegisterTimeOut: 30 * time.Second,
 		ResponseTimeOut: 10 * time.Minute,
@@ -94,5 +94,6 @@ func InitCenterServer(port int, ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	global.CenterServer = centerServer
+
+	return centerServer
 }

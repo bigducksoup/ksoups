@@ -2,6 +2,7 @@ package core
 
 import (
 	"apps/common/message"
+	"apps/common/protocol"
 	"apps/common/utils"
 	"encoding/json"
 	"errors"
@@ -13,13 +14,14 @@ import (
 
 type Probe struct {
 	Conn         *net.Conn
+	ReaderWriter *protocol.ReaderWriter
 	Id           string
 	Addr         string
 	Time         time.Time
 	LastPingTime time.Time
 }
 
-func CreateProbe(conn *net.Conn, id string) (p Probe) {
+func CreateProbe(conn *net.Conn, readerWriter *protocol.ReaderWriter, id string) (p Probe) {
 
 	p = Probe{
 		Conn:         conn,
@@ -27,11 +29,10 @@ func CreateProbe(conn *net.Conn, id string) (p Probe) {
 		Addr:         (*conn).RemoteAddr().String(),
 		Time:         time.Now(),
 		LastPingTime: time.Now(),
+		ReaderWriter: readerWriter,
 	}
 	return p
 }
-
-var Ctx Context
 
 // Context that holds Probes metadata
 type Context struct {
@@ -46,7 +47,7 @@ func (c *Context) GetProbe(id string) (*Probe, error) {
 
 	value, ok := c.Probes.Load(id)
 	if !ok {
-		return nil, errors.New("no value matches key")
+		return nil, errors.New("probe not online")
 	}
 	res := value.(*Probe)
 
@@ -57,7 +58,7 @@ func (c *Context) GetProbeByAddr(addr string) (*Probe, error) {
 
 	value, ok := c.AddrProbe.Load(addr)
 	if !ok {
-		return nil, errors.New("no value matches key")
+		return nil, errors.New("probe not online")
 	}
 	res := value.(*Probe)
 
@@ -102,7 +103,6 @@ func (c *Context) ReceiveResp(reqId string, resp message.Msg) error {
 
 	c.respChanMap.Delete(reqId)
 	close(channel)
-
 	return nil
 }
 
@@ -129,20 +129,13 @@ func (c *Context) SendData(id string, data any, dataType message.DataType) (msg 
 		return message.Msg{}, jsonErr
 	}
 
-	encode, encodeErr := message.Encode(marshal)
-	if encodeErr != nil {
-		return message.Msg{}, encodeErr
-	}
-
-	conn := *(p.Conn)
-
-	_, err = conn.Write(encode)
+	err = (*p.ReaderWriter).Write(marshal)
 	return msg, err
 }
 
 func (c *Context) SendMsg(id string, msg message.Msg) error {
 
-	probe, err := c.GetProbe(id)
+	p, err := c.GetProbe(id)
 
 	if err != nil {
 		return err
@@ -153,14 +146,7 @@ func (c *Context) SendMsg(id string, msg message.Msg) error {
 		return err
 	}
 
-	encode, err := message.Encode(bytes)
-	if err != nil {
-		return err
-	}
-
-	conn := *(probe.Conn)
-
-	_, err = conn.Write(encode)
+	err = (*p.ReaderWriter).Write(bytes)
 	return err
 }
 

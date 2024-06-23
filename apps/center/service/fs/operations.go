@@ -17,7 +17,7 @@ func (o *OperationService) DeleteFile(probeId string, path string) error {
 		Path: path,
 	}
 
-	bytes, err := o.ServerCtx.SendMsgExpectRes(probeId, fd, message.DELETEFILE)
+	bytes, err := o.ServerCtx.SendMsgExpectRes(probeId, fd, message.DELETE_FILE)
 
 	if err != nil {
 		return err

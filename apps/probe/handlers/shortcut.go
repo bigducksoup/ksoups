@@ -1,18 +1,18 @@
 package handlers
 
 import (
+	"apps/common/message"
 	. "apps/common/message/data"
 	"apps/probe/config"
 	shortcutService "apps/probe/service/shortcut"
-	"encoding/json"
 )
 
-func handleRunSC(data []byte) ([]byte, error) {
+func handleRunSC(data []byte) (any, message.DataType, error) {
 
 	scRun, err := readData[ShortcutRun](data)
 
 	if err != nil {
-		return nil, err
+		return nil, message.ERROR, err
 	}
 
 	var result any
@@ -24,28 +24,22 @@ func handleRunSC(data []byte) ([]byte, error) {
 		result = shortcutService.ExecuteShortcut(scRun)
 	}
 
-	bytes, err := json.Marshal(result)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
+	return result, message.RUN_SHORTCUT_RESP, nil
 }
 
 // 创建脚本
-func handleCreateScript(data []byte) ([]byte, error) {
+func handleCreateScript(data []byte) (any, message.DataType, error) {
 
 	c, err := readData[CreateScript](data)
 
 	if err != nil {
-		return nil, err
+		return nil, message.ERROR, err
 	}
 
 	scriptPath, err := shortcutService.CreateScript(c.Name, config.Conf.ScriptPath, c.Content)
 
 	if err != nil {
-		return nil, err
+		return nil, message.ERROR, err
 	}
 
 	resp := CreateScriptResp{
@@ -53,11 +47,5 @@ func handleCreateScript(data []byte) ([]byte, error) {
 		AbsPath: *scriptPath,
 	}
 
-	bytes, err := json.Marshal(resp)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
+	return resp, message.CREATE_SCRIPT_RESP, nil
 }

@@ -60,3 +60,15 @@ func (c *CRUDService) DeleteGroup(groupId string) error {
 
 	return err
 }
+
+func (c *CRUDService) GetSSHInfo(id string) (model.SSHInfo, bool) {
+
+	var sshInfo model.SSHInfo
+	row := c.Db.Where("id = ?", id).First(&sshInfo).RowsAffected
+
+	if row == 0 {
+		return model.SSHInfo{}, false
+	}
+
+	return sshInfo, true
+}

@@ -7,7 +7,6 @@ import (
 	"apps/probe/connect"
 	"apps/probe/function"
 	"context"
-	"encoding/json"
 	"io"
 	"log"
 )
@@ -97,23 +96,8 @@ func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunR
 			RunId:   runMeta.Id,
 		}
 
-		marshal, e := json.Marshal(outPut)
-
-		if e != nil {
-			(*outPipe).Close()
-			return
-		}
-
-		msg := message.Msg{
-			Type:     message.PROACTIVE_PUSH,
-			Id:       runMeta.Id,
-			Data:     marshal,
-			ErrMark:  false,
-			DataType: message.SHORTCUT_OUTPUT,
-		}
-
-		e = connect.Connection.SendMessage(msg)
-
+		// TODO with id ??
+		e := connect.ProbeInstance.PushToCenter(outPut, message.SHORTCUT_OUTPUT)
 		if e != nil {
 			(*outPipe).Close()
 		}
@@ -128,22 +112,7 @@ func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunR
 			RunId:   runMeta.Id,
 		}
 
-		marshal, e := json.Marshal(outPut)
-
-		if e != nil {
-			(*errPipe).Close()
-			return
-		}
-
-		msg := message.Msg{
-			Type:     message.PROACTIVE_PUSH,
-			Id:       runMeta.Id,
-			Data:     marshal,
-			ErrMark:  false,
-			DataType: message.SHORTCUT_OUTPUT,
-		}
-
-		e = connect.Connection.SendMessage(msg)
+		e := connect.ProbeInstance.PushToCenter(outPut, message.SHORTCUT_OUTPUT)
 
 		if e != nil {
 			(*errPipe).Close()

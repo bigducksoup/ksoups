@@ -80,7 +80,6 @@ func (n *NormalScheduler) RunOne(seeker *Seeker, runner *ShortcutRunner) (*NodeR
 	return result, nil
 }
 
-// TODO TEST
 func (n *NormalScheduler) RunAll(seeker *Seeker, runner *ShortcutRunner) ([]*NodeRunResult, error) {
 
 	var res []*NodeRunResult

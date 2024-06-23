@@ -61,6 +61,10 @@ func (s *Runner) RealTimeRun(sc model.Shortcut) (id string, err error) {
 
 	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT)
 
+	if err != nil {
+		return "", err
+	}
+
 	resp := data.RealTimeShortcutRunResp{}
 
 	err = json.Unmarshal(bytes, &resp)

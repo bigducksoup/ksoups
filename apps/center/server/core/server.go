@@ -3,7 +3,7 @@ package core
 import (
 	"apps/common/message"
 	"apps/common/message/data"
-	"bufio"
+	"apps/common/protocol"
 	"context"
 	"encoding/json"
 	"errors"
@@ -32,14 +32,14 @@ type CenterServerOptions struct {
 
 func (c *CenterServer) Start() error {
 
-	log.Println("center server initializing")
+	log.Println("Center server initializing")
 	//tcp listen port
 	u := fmt.Sprintf(":%d", c.Port)
 	listener, err := net.Listen("tcp", u)
 	if err != nil {
 		return err
 	}
-	log.Println("center listening port", c.Port)
+	log.Println("Center server listening port:", c.Port)
 
 	go func() {
 		for {
@@ -75,7 +75,6 @@ func (c *CenterServer) SetMsgHandlePolicy(msgType message.Type, policy func(msg 
 
 func (c *CenterServer) SetOnProbeOffLine(onProbeOffLine func(probe *Probe)) {
 	c.handler.onProbeOffLine = onProbeOffLine
-
 }
 
 func CreateCenterServer(options CenterServerOptions) *CenterServer {
@@ -102,26 +101,30 @@ type CenterServerWorker struct {
 }
 
 func (c *CenterServerWorker) HandleConnection(conn *net.Conn, centerServer *CenterServer) {
-	registerInfo, err := c.ShouldRegister(conn, centerServer)
+
+	var connReader io.Reader = *conn
+	var connWriter io.Writer = *conn
+	protocolReaderWriter := protocol.NewReaderWriter(connReader, connWriter)
+
+	registerInfo, err := c.ShouldRegister(protocolReaderWriter, centerServer)
+
 	if err != nil {
 		log.Println(err)
 		(*conn).Close()
 		return
 	}
 
-	probe := CreateProbe(conn, registerInfo.Name)
+	probe := CreateProbe(conn, protocolReaderWriter, registerInfo.Name)
 	centerServer.Ctx.AddProbe(probe.Id, &probe)
 
 	if c.onProbeRegister != nil {
 		c.onProbeRegister(&probe, *registerInfo)
 	}
 
-	reader := bufio.NewReader(*conn)
-
 	for {
 		//读取消息
-		decode, err := message.DecodedToBytes(reader)
-		if err == io.EOF || len(decode) == 0 {
+		payload, err := (*protocolReaderWriter).Read()
+		if err == io.EOF || len(payload) == 0 {
 			//连接断开
 			centerServer.Ctx.RemoveProbe(probe.Id)
 			c.onProbeOffLine(&probe)
@@ -129,7 +132,7 @@ func (c *CenterServerWorker) HandleConnection(conn *net.Conn, centerServer *Cent
 		}
 
 		msg := message.Msg{}
-		err = json.Unmarshal(decode, &msg)
+		err = json.Unmarshal(payload, &msg)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -145,7 +148,7 @@ func (c *CenterServerWorker) HandleConnection(conn *net.Conn, centerServer *Cent
 
 }
 
-func (c *CenterServerWorker) ShouldRegister(conn *net.Conn, centerServer *CenterServer) (*data.RegisterInfo, error) {
+func (c *CenterServerWorker) ShouldRegister(readerWriter *protocol.ReaderWriter, centerServer *CenterServer) (*data.RegisterInfo, error) {
 
 	//超时定时器
 	timer := time.NewTimer(centerServer.options.RegisterTimeOut)
@@ -154,17 +157,19 @@ func (c *CenterServerWorker) ShouldRegister(conn *net.Conn, centerServer *Center
 
 	//开启协程等待注册消息
 	go func() {
-		reader := bufio.NewReader(*conn)
-		decode, err := message.DecodedToBytes(reader)
 
-		if err == io.EOF || len(decode) == 0 {
+		//decode, err := message.DecodedToBytes(reader)
+
+		payload, err := (*readerWriter).Read()
+
+		if err == io.EOF || len(payload) == 0 {
 			errChan <- errors.New("connection lost")
 			return
 		}
 
 		registerMsg := message.Msg{}
 
-		err = json.Unmarshal(decode, &registerMsg)
+		err = json.Unmarshal(payload, &registerMsg)
 		if err != nil {
 			errChan <- err
 			return
@@ -192,16 +197,15 @@ func (c *CenterServerWorker) ShouldRegister(conn *net.Conn, centerServer *Center
 		if err == nil {
 			m := message.Msg{Id: msg.Id, ErrMark: true, Data: []byte("There is already a probe with id :" + registerInfo.Name)}
 			bytes, _ := json.Marshal(m)
-			encode, _ := message.Encode(bytes)
-			(*conn).Write(encode)
+			(*readerWriter).Write(bytes)
 			return nil, errors.New("There is already a probe with id :" + registerInfo.Name)
 		}
 
 		sendRegResp := func(ok bool, data string) {
 			m := message.Msg{Id: msg.Id, ErrMark: false, Data: []byte(data)}
 			bytes, _ := json.Marshal(m)
-			encode, _ := message.Encode(bytes)
-			(*conn).Write(encode)
+
+			(*readerWriter).Write(bytes)
 		}
 
 		if c.Authenticate == nil {
