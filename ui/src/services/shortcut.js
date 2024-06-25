@@ -50,6 +50,20 @@ const runShortcut = async (shortcutId)=>{
 }
 
 
+const realTimeRunShortcut = async (shortcutId) => {
+
+    let sid = window.localStorage.getItem('sid')
+
+    let res = await fetch(baseUrl.value + "api/shortcut/realtime/run?shortcutId=" + shortcutId,{
+        method: 'POST',
+        headers: {
+            'sid' : sid
+        }
+    })
+    return await res.json()
+}
+
+
 /**
  *
  * @param shortcutId
@@ -113,5 +127,6 @@ export {
     getShortcutGroup,
     createShortcut,
     updateShortcut,
-    getShortcutRunHistory
+    getShortcutRunHistory,
+    realTimeRunShortcut
 }

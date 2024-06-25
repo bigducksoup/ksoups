@@ -11,7 +11,6 @@ const useMessagePush = () => {
 
     let ws = new WebSocket(`ws://${baseHost.value}/ws/msg?sid=${sid}`)
 
-    console.log(ws)
 
     ws.onopen = () =>{
         message.success('open message receiver')
@@ -22,7 +21,10 @@ const useMessagePush = () => {
     }
 
     ws.onmessage = (msg) => {
-        console.log(msg)
+        let message =  JSON.parse(msg.data)
+        handlers.forEach(fn =>{
+            fn(JSON.parse(message))
+        })
     }
 
 
@@ -30,7 +32,7 @@ const useMessagePush = () => {
         console.log(err)
     }
 
-    const AddHandler = (handler = (type,payload)=>{console.log(msg)}) => {
+    const AddHandler = (handler = (msg)=>{console.log(msg)}) => {
         handlers.push(handler)
     }
 
@@ -51,5 +53,6 @@ const initMessagePush = () => {
 
 export {
     msgPush,
-    initMessagePush
+    initMessagePush,
+    useMessagePush
 }

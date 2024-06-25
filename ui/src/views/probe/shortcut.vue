@@ -197,17 +197,21 @@ import {
   NSwitch,
   NTag,
     NLog,
+  useMessage,
   useNotification
 } from 'naive-ui'
 import {Add, Play} from '@vicons/ionicons5'
 import Code from '../../components/code.vue'
-import {listShortcut, runShortcut} from '../../services/shortcut.js'
+import {listShortcut, realTimeRunShortcut, runShortcut} from '../../services/shortcut.js'
 import {useAnimation} from "../../hooks/animation.js";
 import {useShortcutInfos, useShortcutOperation} from "../../hooks/shortcut.js";
 import {useDataTable, useForm} from "../../hooks/common.js";
 import {useFSOperation} from "../../hooks/file.js";
 import WindowBar from "../../components/window-bar.vue";
 import {formatTime} from "../../services/time.js";
+import {useMessagePush} from "../../hooks/websocket.js";
+import {realtimeShortcuts} from "../../state/index.js";
+
 
 const route = useRoute()
 const notification = useNotification()
@@ -358,6 +362,21 @@ const runOLShortcut = async (shortcut) => {
     content: res['out'],
     meta: new Date().toLocaleString()
   })
+}
+
+
+const message = useMessage()
+
+const runShortcutRealtime = async (shortcutId) => {
+
+  let res = await realTimeRunShortcut(shortcutId)
+  if (res.code !== 200){
+    message.error('执行失败')
+  }
+
+  // TODO 展示实时执行结果
+  // @see state/index.js
+
 }
 
 

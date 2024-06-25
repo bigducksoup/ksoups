@@ -97,11 +97,11 @@ func (p *Probe) StartWorking() {
 					response, dataType, handleErr := dataHandler(msg.Data)
 
 					if handleErr != nil {
-						p.ReportErr(err)
+						p.ResponseErr(handleErr, msg)
 						return
 					}
 
-					err = p.ResponseToCenter(response, dataType)
+					err = p.ResponseToCenter(msg.Id, response, dataType)
 
 					if err != nil {
 						p.ReportErr(err)
@@ -121,23 +121,31 @@ func (p *Probe) StartWorking() {
 }
 
 func (p *Probe) RegisterToCenter() error {
-	return p.SendToCenter(p.ProbeOptions.RegisterInfo, message.DEFAULT, message.REGISTER)
+	return p.SendToCenter(utils.UUID(), p.ProbeOptions.RegisterInfo, message.DEFAULT, message.REGISTER, false)
 }
 
-func (p *Probe) SendToCenter(v any, dataType message.DataType, messageType message.Type) error {
+func (p *Probe) SendToCenter(id string, v any, dataType message.DataType, messageType message.Type, errMark bool) error {
 
-	bytes, err := p.Encoder(v)
+	var bytes []byte
 
-	if err != nil {
-		return err
+	switch v.(type) {
+	case string:
+		bytes = []byte(v.(string))
+	default:
+		encodedData, err := p.Encoder(v)
+
+		if err != nil {
+			return err
+		}
+		bytes = encodedData
 	}
 
 	msg := message.Msg{
 		Type:     messageType,
-		Id:       utils.UUID(),
+		Id:       id,
 		Data:     bytes,
 		DataType: dataType,
-		ErrMark:  false,
+		ErrMark:  errMark,
 	}
 
 	msgBytes, err := p.Encoder(msg)
@@ -154,13 +162,12 @@ func (p *Probe) SendToCenter(v any, dataType message.DataType, messageType messa
 
 func (p *Probe) PushToCenter(v any, dataType message.DataType) error {
 
-	return p.SendToCenter(v, dataType, message.PROACTIVE_PUSH)
+	return p.SendToCenter(utils.UUID(), v, dataType, message.PROACTIVE_PUSH, false)
 
 }
 
-func (p *Probe) ResponseToCenter(body any, dataType message.DataType) error {
-
-	return p.SendToCenter(body, dataType, message.RESPONSE)
+func (p *Probe) ResponseToCenter(id string, body any, dataType message.DataType) error {
+	return p.SendToCenter(id, body, dataType, message.RESPONSE, false)
 }
 
 // Request send a request to center, center must return response.
@@ -216,6 +223,12 @@ func (p *Probe) Request(body any, dataType message.DataType, receiver any) error
 		return err
 	}
 
+}
+
+func (p *Probe) ResponseErr(err error, originMessage message.Msg) error {
+	log.Printf("Response error to center, error : %s", err.Error())
+
+	return p.SendToCenter(originMessage.Id, err.Error(), message.ERROR, message.RESPONSE, true)
 }
 
 // ReportErr report error message to center
