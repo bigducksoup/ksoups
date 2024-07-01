@@ -24,7 +24,7 @@ type ProbeOptions struct {
 	ReconnectGapTime  time.Duration
 	RegisterInfo      data.RegisterInfo
 	DataHandlers      map[message.DataType]func(data []byte) (any, message.DataType, error)
-	BeforStart        func(*Probe)
+	BeforeStart       func(*Probe)
 	Encoder           func(v any) ([]byte, error)
 	Decoder           func(bytes []byte, v any) error
 }
@@ -128,9 +128,9 @@ func (p *Probe) SendToCenter(id string, v any, dataType message.DataType, messag
 
 	var bytes []byte
 
-	switch v.(type) {
+	switch v := v.(type) {
 	case string:
-		bytes = []byte(v.(string))
+		bytes = []byte(v)
 	default:
 		encodedData, err := p.Encoder(v)
 

@@ -4,7 +4,7 @@ import (
 	"apps/probe/config"
 	"apps/probe/connect"
 	"apps/probe/handlers"
-	fileservice "apps/probe/service/fs"
+	"apps/probe/service"
 	"context"
 	"flag"
 	"log"
@@ -57,10 +57,9 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 
-	log.Println("Shutdown Server ...")
+	service.FileSystem.ClearFileCache()
 
-	fileservice.ClearFileCache()
-
-	log.Println("Server exiting")
+	log.Println("Shutdown Probe ...")
+	log.Println("Probe exiting")
 
 }

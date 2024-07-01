@@ -1,41 +1,56 @@
-package fileservice
+package filesystem
 
 import (
-	"apps/common/message/data"
 	"apps/probe/function"
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
+	"time"
 )
 
-// DirRead reads dir info by accepting a path
-func DirRead(dr data.DirRead) (data.DirResponse, error) {
+type DirInfo struct {
+	Path     string
+	OnlyFile bool
+	Items    []DirItem
+}
 
-	dir, err := os.ReadDir(dr.Path)
+type DirItem struct {
+	Name       string    `json:"name"`
+	IsDir      bool      `json:"isDir"`
+	IsLink     bool      `json:"isLink"`
+	LinkTo     string    `json:"linkTo"`
+	Size       int64     `json:"size"`
+	Permission string    `json:"permission"`
+	User       string    `json:"user"`
+	UserGroup  string    `json:"usergroup"`
+	Mode       string    `json:"mode"`
+	ModTime    time.Time `json:"modTime"`
+}
+
+func (fs *FileSystemService) ReadDir(path string, onlyFile bool) (info DirInfo, err error) {
+
+	dir, err := os.ReadDir(path)
 
 	if err != nil {
 		log.Println(err)
-		return data.DirResponse{}, err
+		return DirInfo{}, err
 	}
 
-	dres := data.DirResponse{
-		Parent:   dr.Path,
-		FileOnly: dr.FileOnly,
-		Items:    []data.DirItem{},
+	dirInfo := DirInfo{
+		Path:     path,
+		OnlyFile: onlyFile,
+		Items:    []DirItem{},
 	}
 
 	for _, item := range dir {
-
-		if dr.FileOnly && item.IsDir() {
+		if onlyFile && item.IsDir() {
 			continue
 		}
 
 		info, err := item.Info()
 
 		if err != nil {
-			log.Println(err)
-			return data.DirResponse{}, err
+			return DirInfo{}, err
 		}
 
 		uid, fileUserName, err := function.FindOwner(info)
@@ -50,7 +65,7 @@ func DirRead(dr data.DirRead) (data.DirResponse, error) {
 			log.Printf("look up file user group Id failed,gid:%d,err:%s", gid, err.Error())
 		}
 
-		absPath := filepath.Join(dr.Path, info.Name())
+		absPath := filepath.Join(path, info.Name())
 
 		//是否为软链接
 		var isLink bool = false
@@ -63,12 +78,12 @@ func DirRead(dr data.DirRead) (data.DirResponse, error) {
 			link, err = os.Readlink(absPath)
 			if err != nil {
 				log.Printf("read link err, path : %s , err : %s", absPath, err.Error())
-				return data.DirResponse{}, err
+				return dirInfo, err
 			}
 			isLink = true
 		}
 
-		dirItem := data.DirItem{
+		dirItem := DirItem{
 			Name:       item.Name(),
 			IsDir:      item.IsDir(),
 			IsLink:     isLink,
@@ -81,27 +96,13 @@ func DirRead(dr data.DirRead) (data.DirResponse, error) {
 			ModTime:    info.ModTime(),
 		}
 
-		dres.Items = append(dres.Items, dirItem)
+		dirInfo.Items = append(dirInfo.Items, dirItem)
 
 	}
 
-	return dres, nil
-
+	return dirInfo, nil
 }
 
-func DirCreate(dc data.DirCreate) (data.DirCreateResponse, error) {
-
-	perm, err := strconv.ParseInt(dc.Permission, 8, 0)
-	err = os.MkdirAll(dc.Path, os.FileMode(perm))
-
-	if err != nil {
-		return data.DirCreateResponse{}, err
-	}
-
-	return data.DirCreateResponse{
-		Ok:         true,
-		Path:       dc.Path,
-		Permission: dc.Permission,
-	}, nil
-
+func (fs *FileSystemService) CreateDir(path string, perm int64) error {
+	return os.MkdirAll(path, os.FileMode(perm))
 }

@@ -6,7 +6,9 @@ import (
 	"apps/common/message/data"
 	"apps/probe/connect"
 	"apps/probe/function"
+	"apps/probe/script"
 	"context"
+	"fmt"
 	"io"
 	"log"
 )
@@ -124,4 +126,46 @@ func ExecuteShortcutRealTime(runMeta data.ShortcutRun) data.RealTimeShortcutRunR
 		RunId: runMeta.Id,
 		Err:   "",
 	}
+}
+
+var RunnerMap map[script.ScriptType]script.ScriptRunner = make(map[script.ScriptType]script.ScriptRunner)
+
+type ShortcutExecutionService struct {
+	shellRunner *script.ShellScriptRunner
+}
+
+func NewShortcutExecutionService() *ShortcutExecutionService {
+
+	shellRunner := script.NewShellScriptRunner()
+
+	RunnerMap[script.Shell] = shellRunner
+
+	return &ShortcutExecutionService{
+		shellRunner: shellRunner,
+	}
+}
+
+func (se *ShortcutExecutionService) Exec(st script.Script, scriptType script.ScriptType) (result []byte, err error) {
+
+	runner, ok := RunnerMap[scriptType]
+
+	if !ok {
+		return nil, fmt.Errorf("could not find runner for script type : %d", scriptType)
+	}
+
+	return runner.Run(st)
+
+}
+
+
+func (se *ShortcutExecutionService) ExecAsync(st script.Script, scriptType script.ScriptType,handleOut func(inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error)) {
+	
+	runner, ok := RunnerMap[scriptType]
+
+	if !ok {
+		handleOut(nil,nil,nil,fmt.Errorf("could not find runner for script type : %d", scriptType))
+		return
+	}
+
+	handleOut(runner.RunAsync(context.TODO(),st))
 }

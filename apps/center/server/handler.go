@@ -10,13 +10,13 @@ import (
 	"log"
 )
 
-func HandleRESPONSE(msg message.Msg, serverContext *core.Context) error {
+func HandleResponse(msg message.Msg, serverContext *core.Context) error {
 
 	if msg.Type != message.RESPONSE {
 		return errors.New("msg type should be RESPONSE")
 	}
 
-	if msg.ErrMark == true {
+	if msg.ErrMark {
 		log.Println(msg)
 	}
 
@@ -64,20 +64,3 @@ func HandleProActivePush(msg message.Msg, serverContext *core.Context) error {
 	}
 	return nil
 }
-
-//func HandleHEARTBEAT(msg message.Msg) {
-//
-//	addr := string(msg.Data)
-//
-//	value, ok := Ctx.AddrProbe.Load(addr)
-//
-//	if !ok {
-//		log.Println("no such connection")
-//		return
-//	}
-//
-//	probe := value.(*Probe)
-//
-//	probe.LastPingTime = time.Now()
-//
-//}

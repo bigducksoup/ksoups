@@ -1,44 +1,48 @@
 package shortcut
 
 import (
-	"apps/common/utils"
-	"apps/probe/function"
+	"apps/probe/config"
+	"apps/probe/script"
+	"errors"
 	"fmt"
-	"os"
-	"strings"
 )
 
-func CreateScript(name string, prefixPath string, content string) (absolutePath *string, err error) {
+// ScriptRepoMap
+// @see NewShortcutManageService
+var ScriptRepoMap map[script.ScriptType]script.ScriptRepo = make(map[script.ScriptType]script.ScriptRepo)
 
-	name = strings.ReplaceAll(name, " ", "-")
+type ShortcutManageService struct {
+	shellRepo *script.ShellScriptRepo
+}
 
-	// 去除prefix 末尾的 ‘/’
-	u := prefixPath[len(prefixPath)-1]
-	if string(u) == "/" {
-		prefixPath = prefixPath[0 : len(prefixPath)-1]
+func NewShortcutManageService() *ShortcutManageService {
+	shellRepo := script.NewShellScriptRepo(config.Conf.ScriptPath)
+	ScriptRepoMap[script.Shell] = shellRepo
+	return &ShortcutManageService{
+		shellRepo: shellRepo,
+	}
+}
+
+// CreateScript create script by name,type and content
+func (s *ShortcutManageService) CreateScript(name string, scriptType script.ScriptType, content []byte, args []string) (script.Script, error) {
+
+	repo, ok := ScriptRepoMap[scriptType]
+
+	if !ok {
+		return nil, errors.New("do not support such script type")
 	}
 
-	// 拼接绝对路径
-	path := fmt.Sprintf("%s/%s-%s.sh", prefixPath, name, utils.UUID())
-
-	// 创建文件
-	scriptFile, err := function.CreateFile(path, 0o777)
-	defer scriptFile.Close()
+	id, err := repo.Store(content, name, args)
 
 	if err != nil {
-		os.Remove(scriptFile.Name())
 		return nil, err
 	}
 
-	// 写入内容
-	_, err = scriptFile.WriteString(content)
+	st, ok := repo.Get(id)
 
-	if err != nil {
-		os.Remove(scriptFile.Name())
-		return nil, err
+	if !ok {
+		return nil, fmt.Errorf("could not find script with id : %s",id)
 	}
 
-	r := scriptFile.Name()
-
-	return &r, nil
+	return st, nil
 }

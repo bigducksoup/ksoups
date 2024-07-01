@@ -3,7 +3,8 @@ package handlers
 import (
 	"apps/common/message"
 	. "apps/common/message/data"
-	"apps/probe/config"
+	"apps/probe/script"
+	"apps/probe/service"
 	shortcutService "apps/probe/service/shortcut"
 )
 
@@ -36,7 +37,7 @@ func handleCreateScript(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	scriptPath, err := shortcutService.CreateScript(c.Name, config.Conf.ScriptPath, c.Content)
+	script, err := service.ShortcutManage.CreateScript(c.Name, script.Shell, []byte(c.Content), nil)
 
 	if err != nil {
 		return nil, message.ERROR, err
@@ -44,7 +45,7 @@ func handleCreateScript(data []byte) (any, message.DataType, error) {
 
 	resp := CreateScriptResp{
 		Name:    c.Name,
-		AbsPath: *scriptPath,
+		AbsPath: script.Path(),
 	}
 
 	return resp, message.CREATE_SCRIPT_RESP, nil

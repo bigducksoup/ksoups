@@ -3,7 +3,9 @@ package handlers
 import (
 	"apps/common/message"
 	. "apps/common/message/data"
-	fileservice "apps/probe/service/fs"
+	"apps/probe/service"
+	filesystem "apps/probe/service/filesystem"
+	"strconv"
 )
 
 func handleReadFile(data []byte) (any, message.DataType, error) {
@@ -14,13 +16,18 @@ func handleReadFile(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	fileReadResponse, err := fileservice.FileRead(fileRead)
+	fileInfo, err := service.FileSystem.ReadFile(fileRead.Path)
 
 	if err != nil {
 		return nil, message.ERROR, err
 	}
 
-	return fileReadResponse, message.READ_FILE_RESP, nil
+	resp := FileReadResponse{
+		Path:    fileInfo.Path,
+		Content: fileInfo.Content,
+		Size:    fileInfo.Size,
+	}
+	return resp, message.READ_FILE_RESP, nil
 
 }
 
@@ -32,13 +39,26 @@ func handleModifyFile(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	result, err := fileservice.FileModify(mf)
+	var changes []filesystem.Change
+
+	for _, c := range mf.Changes {
+		changes = append(changes, filesystem.Change{
+			Count:     c.Count,
+			Operation: c.Operation,
+			Value:     c.Value,
+		})
+	}
+
+	err = service.FileSystem.EditFile(mf.Path, changes)
 
 	if err != nil {
 		return nil, message.ERROR, err
 	}
 
-	return result, message.MODIFY_FILE_RESP, nil
+	return FileModifyResponse{
+		Path: mf.Path,
+		OK:   true,
+	}, message.MODIFY_FILE_RESP, nil
 }
 
 func handleCreateFile(data []byte) (any, message.DataType, error) {
@@ -49,13 +69,23 @@ func handleCreateFile(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	fileCreateResponse, err := fileservice.FileCreate(fc)
+	perm, err := strconv.ParseInt(fc.Permission, 8, 0)
 
 	if err != nil {
 		return nil, message.ERROR, err
 	}
 
-	return fileCreateResponse, message.CREATE_FILE_RESP, nil
+	err = service.FileSystem.CreateFile(fc.Path, perm)
+
+	if err != nil {
+		return nil, message.ERROR, err
+	}
+
+	return FileCreateResponse{
+		Ok:         true,
+		Path:       fc.Path,
+		Permission: fc.Permission,
+	}, message.CREATE_FILE_RESP, nil
 
 }
 
@@ -67,11 +97,14 @@ func handleDeleteFile(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	fileDeteteResponse, err := fileservice.FileDelete(fd)
+	err = service.FileSystem.DeleteFile(fd.Path)
 
 	if err != nil {
 		return nil, message.ERROR, err
 	}
 
-	return fileDeteteResponse, message.DELETE_FILE_RESP, nil
+	return FileDeleteResponse{
+		Ok:   true,
+		Path: fd.Path,
+	}, message.DELETE_FILE_RESP, nil
 }

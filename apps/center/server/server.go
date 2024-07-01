@@ -25,7 +25,7 @@ func InitCenterServer(port int, ctx context.Context) *core.CenterServer {
 		Port:            port,
 		Context:         ctx,
 		HandlePolicy: map[message.Type]func(msg message.Msg, serverContext *core.Context) error{
-			message.RESPONSE:       HandleRESPONSE,
+			message.RESPONSE:       HandleResponse,
 			message.PROACTIVE_PUSH: HandleProActivePush,
 		},
 	})
@@ -42,6 +42,11 @@ func InitCenterServer(port int, ctx context.Context) *core.CenterServer {
 		}
 
 		privateKeyBytes, err := utils.DecodeBase64ToKey(registerKey.PrivateKey)
+
+		if err != nil {
+			return err
+		}
+
 		privateKey, err := utils.ParsePrivateKey(privateKeyBytes)
 		if err != nil {
 			return err
