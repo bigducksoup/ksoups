@@ -5,10 +5,9 @@ import (
 	. "apps/common/message/data"
 	"apps/probe/script"
 	"apps/probe/service"
-	shortcutService "apps/probe/service/shortcut"
 )
 
-func handleRunSC(data []byte) (any, message.DataType, error) {
+func handleRunShortcut(data []byte) (any, message.DataType, error) {
 
 	scRun, err := readData[ShortcutRun](data)
 
@@ -18,11 +17,23 @@ func handleRunSC(data []byte) (any, message.DataType, error) {
 
 	var result any
 
-	//check if run in real time way
-	if scRun.RealTime {
-		result = shortcutService.ExecuteShortcutRealTime(scRun)
-	} else {
-		result = shortcutService.ExecuteShortcut(scRun)
+	script, err := service.ShortcutManage.GetScript(scRun.Id, script.ScriptType(scRun.Type))
+
+	if err != nil {
+		return nil, message.ERROR, err
+	}
+
+	stdOut, stdErr, err := service.ShortExecutionService.Exec(script)
+
+	if err != nil {
+		return nil, message.ERROR, err
+	}
+
+	result = ShortcutRunResp{
+		Ok:     true,
+		Err:    string(stdErr),
+		StdOut: string(stdOut),
+		StdErr: string(stdErr),
 	}
 
 	return result, message.RUN_SHORTCUT_RESP, nil

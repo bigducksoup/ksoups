@@ -52,7 +52,7 @@ func ShortcutCreate(c *gin.Context) {
 	c.JSON(http.StatusOK, response.Success[bool](true))
 }
 
-// ListShortcuts 列出指定探针的所有快捷方式
+// ListShortcuts 列出指定的所有快捷方式
 // Params: probeId 探针id
 // Response: 200，“success”， []model.Shortcut
 // Err: 200, “fail”， err

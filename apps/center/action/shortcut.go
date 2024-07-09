@@ -16,15 +16,16 @@ type Runner struct {
 
 func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 
-	oneLineShortcutRun := data.ShortcutRun{
-		Id:      utils.UUID(),
+	runMeta := data.ShortcutRun{
+		Id:      sc.Id,
 		Type:    sc.Type,
 		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
 		JustRun: sc.JustRun,
 		Payload: sc.Payload,
+		Args:    sc.Args,
 	}
 
-	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, runMeta, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return err.Error(), false

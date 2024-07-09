@@ -145,27 +145,26 @@ func NewShortcutExecutionService() *ShortcutExecutionService {
 	}
 }
 
-func (se *ShortcutExecutionService) Exec(st script.Script, scriptType script.ScriptType) (result []byte, err error) {
+func (se *ShortcutExecutionService) Exec(st script.Script) (stdOut []byte, stdErr []byte, err error) {
 
-	runner, ok := RunnerMap[scriptType]
+	runner, ok := RunnerMap[st.Type()]
 
 	if !ok {
-		return nil, fmt.Errorf("could not find runner for script type : %d", scriptType)
+		return nil, nil, fmt.Errorf("could not find runner for script type : %d", st.Type())
 	}
 
 	return runner.Run(st)
 
 }
 
+func (se *ShortcutExecutionService) ExecAsync(st script.Script, scriptType script.ScriptType, handleOut func(inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error)) {
 
-func (se *ShortcutExecutionService) ExecAsync(st script.Script, scriptType script.ScriptType,handleOut func(inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error)) {
-	
 	runner, ok := RunnerMap[scriptType]
 
 	if !ok {
-		handleOut(nil,nil,nil,fmt.Errorf("could not find runner for script type : %d", scriptType))
+		handleOut(nil, nil, nil, fmt.Errorf("could not find runner for script type : %d", scriptType))
 		return
 	}
 
-	handleOut(runner.RunAsync(context.TODO(),st))
+	handleOut(runner.RunAsync(context.TODO(), st))
 }

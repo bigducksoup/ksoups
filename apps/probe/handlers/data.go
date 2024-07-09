@@ -10,7 +10,7 @@ var DataHandlePolicy = map[message.DataType]func(data []byte) (any, message.Data
 	message.READ_FILE:     handleReadFile,
 	message.MODIFY_FILE:   handleModifyFile,
 	message.CREATE_FILE:   handleCreateFile,
-	message.RUN_SHORTCUT:  handleRunSC,
+	message.RUN_SHORTCUT:  handleRunShortcut,
 	message.CREATE_DIR:    handleCreateDir,
 	message.CREATE_SCRIPT: handleCreateScript,
 	message.DELETE_FILE:   handleDeleteFile,

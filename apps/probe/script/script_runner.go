@@ -9,33 +9,36 @@ import (
 )
 
 type ScriptRunner interface {
-	Run(script Script) (result []byte, err error)
+	Run(script Script) (stdOut []byte, stdErr []byte, err error)
 	RunAsync(ctx context.Context, script Script) (inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error)
 }
 
 type ShellScriptRunner struct {
 }
 
-
 // Run script and return output
-func (s *ShellScriptRunner) Run(script Script) (result []byte, err error) {
+func (s *ShellScriptRunner) Run(script Script) (stdOut []byte, stdErr []byte, err error) {
 
 	args := slices.Insert(script.Args(), 0, script.Path())
 
 	cmd := exec.Command("sh", args...)
 
-	return cmd.CombinedOutput()
+	out, err := cmd.Output()
+
+	if err != nil {
+		return out, []byte(err.Error()), nil
+	}
+
+	return out, nil, nil
 }
 
-
-// RunAsync run Script async 
+// RunAsync run Script async
 // return inPipe,outPipe and errPipe
 func (s *ShellScriptRunner) RunAsync(ctx context.Context, script Script) (inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error) {
 
 	args := slices.Insert(script.Args(), 0, script.Path())
 
 	cmd := exec.CommandContext(ctx, "sh", args...)
-
 
 	if err != nil {
 		return nil, nil, nil, err

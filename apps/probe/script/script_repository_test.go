@@ -24,7 +24,7 @@ func TestA(t *testing.T) {
 
 	scriptRunner := NewShellScriptRunner()
 
-	res, err := scriptRunner.Run(script)
+	res, _, err := scriptRunner.Run(script)
 
 	if err != nil {
 		t.Fatal(err)

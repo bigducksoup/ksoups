@@ -46,3 +46,19 @@ func (s *ShortcutManageService) CreateScript(name string, scriptType script.Scri
 
 	return st, nil
 }
+
+func (s *ShortcutManageService) GetScript(id string, scriptType script.ScriptType) (script.Script, error) {
+	repo, ok := ScriptRepoMap[scriptType]
+
+	if !ok {
+		return nil, errors.New("do not support such script type")
+	}
+
+	script, ok := repo.Get(id)
+
+	if !ok {
+		return nil, fmt.Errorf("could not find script with id = %s", id)
+	}
+
+	return script, nil
+}

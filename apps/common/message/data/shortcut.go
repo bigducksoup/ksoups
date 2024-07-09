@@ -11,6 +11,7 @@ type ShortcutRun struct {
 	JustRun  bool   `json:"justRun"`
 	Payload  string `json:"payload"`
 	RealTime bool   `json:"realTime"`
+	Args     string
 }
 
 type ShortcutRunResp struct {
