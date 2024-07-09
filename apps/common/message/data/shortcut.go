@@ -35,11 +35,14 @@ type RealTimeShortcutOutPut struct {
 }
 
 type CreateScript struct {
-	Name    string `json:"name"`
-	Content string `json:"content"`
+	ScriptType int
+	Name       string   `json:"name"`
+	Content    []byte   `json:"content"`
+	Args       []string `json:"args"`
 }
 
 type CreateScriptResp struct {
+	Id      string `json:"id"`
 	Name    string `json:"name"`
 	AbsPath string `json:"absPath"`
 }

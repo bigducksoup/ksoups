@@ -24,7 +24,7 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return err.Error(), false
@@ -59,7 +59,7 @@ func (s *Runner) RealTimeRun(sc model.Shortcut) (id string, err error) {
 		RealTime: true,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return "", err
@@ -88,7 +88,7 @@ func (s *Runner) ResultRun(sc *model.Shortcut) (*data.ShortcutRunResp, error) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (n *NormalShortcutRunner) Run(sc model.Shortcut) (RunResult, error) {
 		Payload: sc.Payload,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
+	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, oneLineShortcutRun, message.RUN_SHORTCUT)
 
 	if err != nil {
 		return res, err

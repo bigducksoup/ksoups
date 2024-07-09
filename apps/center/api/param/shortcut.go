@@ -8,6 +8,7 @@ type CreateShortcutParams struct {
 	Timeout     int64  `json:"timeout" binding:"required" msg:"Timeout 不能为空"`
 	JustRun     bool   `json:"justRun"`
 	Payload     string `json:"payload" binding:"required" msg:"Payload 不能为空"`
+	Args        string `json:"args"`
 }
 
 type CreateScriptParams struct {

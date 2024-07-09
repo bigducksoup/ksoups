@@ -6,10 +6,10 @@ import (
 	"apps/center/global"
 	"apps/center/model"
 	"apps/center/service"
-	"apps/common/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ShortcutCreate 创建快捷方式
@@ -32,15 +32,15 @@ func ShortcutCreate(c *gin.Context) {
 	}
 
 	sc := model.Shortcut{}
-	sc.Id = utils.UUID()
 	sc.ProbeId = p.ProbeId
 	sc.Name = p.Name
 	sc.Timeout = p.Timeout
 	sc.JustRun = p.JustRun
-	sc.Payload = p.Payload
 	sc.CreateTime = time.Now()
+	sc.Payload = p.Payload
 	sc.Type = p.Type
 	sc.Description = p.Description
+	sc.Args = p.Args
 
 	err = service.ShortcutCRUD.SaveShortcut(&sc)
 

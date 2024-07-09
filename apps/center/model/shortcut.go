@@ -22,6 +22,7 @@ type Shortcut struct {
 	JustRun bool   `json:"justRun"`
 	Payload string `json:"payload"`
 	ProbeId string `json:"probeId"`
+	Args    string `json:"args"`
 }
 
 type ShortcutExecLog struct {

@@ -32,7 +32,7 @@ func FileRead(c *gin.Context) {
 		Path: path,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READ_FILE)
+	bytes, err := global.CenterServer.Ctx.Request(probe.Id, read, message.READ_FILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -82,7 +82,7 @@ func FileModify(c *gin.Context) {
 		})
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileMReq, message.MODIFY_FILE)
+	bytes, err := global.CenterServer.Ctx.Request(probe.Id, fileMReq, message.MODIFY_FILE)
 
 	if err != nil {
 		c.JSON(200, response.Fail(err))
@@ -129,7 +129,7 @@ func FileCreate(c *gin.Context) {
 		Permission: fileCreateParams.Permission,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, fileCreate, message.CREATE_FILE)
+	bytes, err := global.CenterServer.Ctx.Request(probe.Id, fileCreate, message.CREATE_FILE)
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
 		return

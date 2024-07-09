@@ -37,6 +37,8 @@ func main() {
 		panic(err)
 	}
 
+	service.InitServices()
+
 	connect.InitProbe(connect.ProbeOptions{
 		Address:           config.Conf.CenterAddr,
 		Ping:              false,
@@ -45,8 +47,8 @@ func main() {
 		RegisterInfo:      registerInfo,
 		Context:           context,
 		Reconnect:         false,
-		ReconnectGapTime:  5 * time.Second,
-		MaxReconnectCount: 100,
+		ReconnectGapTime:  3 * time.Second,
+		MaxReconnectCount: 20,
 		DataHandlers:      handlers.DataHandlePolicy,
 	})
 	connect.ProbeInstance.StartWorking()

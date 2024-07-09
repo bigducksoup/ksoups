@@ -36,7 +36,7 @@ func DirRead(ctx *gin.Context) {
 		return
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, read, message.READDIR)
+	bytes, err := global.CenterServer.Ctx.Request(probe.Id, read, message.READDIR)
 
 	if err != nil {
 		ctx.JSON(200, response.Fail(err))
@@ -78,7 +78,7 @@ func DirCreate(c *gin.Context) {
 		Permission: p.Permission,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probe.Id, dirCreate, message.CREATE_DIR)
+	bytes, err := global.CenterServer.Ctx.Request(probe.Id, dirCreate, message.CREATE_DIR)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))

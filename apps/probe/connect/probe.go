@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"sync"
@@ -58,7 +59,14 @@ func (p *Probe) StartWorking() {
 				if err == io.EOF {
 					// TODO reconnect
 					log.Println("Lost connection to center")
-					break
+					reconnectErr := p.ReconnectToCenter()
+
+					if reconnectErr == nil {
+						log.Println("successfully reconnected to center")
+						continue
+					}
+
+					panic("reconnect to center failed!")
 				}
 
 				p.ReportErr(err)
@@ -76,6 +84,7 @@ func (p *Probe) StartWorking() {
 
 			if msg.ErrMark {
 				// handle msg error
+				log.Printf("An error occured, message id is %s\n", msg.Id)
 				continue
 			}
 
@@ -114,9 +123,30 @@ func (p *Probe) StartWorking() {
 			case message.PROACTIVE_PUSH:
 				// handle push
 			}
-
 		}
 	}()
+
+}
+
+func (p *Probe) ReconnectToCenter() error {
+
+	// try to reconnect, try p.ProbeOptions.MaxReconnectCount times
+	for i := 0; i < p.ProbeOptions.MaxReconnectCount; i++ {
+
+		log.Println("reconnecting to center....")
+
+		err := p.toCenterConnection.Reconnect()
+		
+
+		if err == nil {
+			rErr := p.RegisterToCenter()
+			return rErr
+		}
+
+		time.Sleep(p.ProbeOptions.ReconnectGapTime)
+	}
+
+	return fmt.Errorf("can not reconnect to center server after %d times trial", p.ProbeOptions.MaxReconnectCount)
 
 }
 

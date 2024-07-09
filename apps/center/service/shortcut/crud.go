@@ -8,8 +8,10 @@ import (
 	"apps/common/message/data"
 	"apps/common/utils"
 	"encoding/json"
-	"gorm.io/gorm"
 	"slices"
+	"strings"
+
+	"gorm.io/gorm"
 )
 
 type CRUDService struct {
@@ -19,13 +21,12 @@ type CRUDService struct {
 
 func (c *CRUDService) SaveShortcut(sc *model.Shortcut) error {
 
-	if sc.Type == model.SCRIPT {
-		absPath, err := c.CreateScriptFile(sc.ProbeId, sc.Name, sc.Payload)
-		if err != nil {
-			return err
-		}
-		sc.Payload = *absPath
+	_, id, err := c.CreateScriptFile(sc.ProbeId, sc.Name, sc.Payload, sc.Type, strings.Split(sc.Args, " "))
+	if err != nil {
+		return err
 	}
+
+	sc.Id = id
 
 	return c.Db.Create(sc).Error
 }
@@ -168,26 +169,28 @@ func (c *CRUDService) RemoveShortcut(id string) error {
 	return nil
 }
 
-func (c *CRUDService) CreateScriptFile(probeId string, name string, content string) (absPath *string, err error) {
+func (c *CRUDService) CreateScriptFile(probeId string, name string, content string, scriptType int, args []string) (absPath string, id string, err error) {
 
 	d := data.CreateScript{
-		Name:    name,
-		Content: content,
+		ScriptType: scriptType,
+		Name:       name,
+		Content:    []byte(content),
+		Args:       args,
 	}
 
-	bytes, err := global.CenterServer.Ctx.SendMsgExpectRes(probeId, d, message.CREATE_SCRIPT)
+	bytes, err := global.CenterServer.Ctx.Request(probeId, d, message.CREATE_SCRIPT)
 
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
 	resp := data.CreateScriptResp{}
 	err = json.Unmarshal(bytes, &resp)
 
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
-	return &resp.AbsPath, nil
+	return resp.AbsPath, resp.Id, nil
 
 }

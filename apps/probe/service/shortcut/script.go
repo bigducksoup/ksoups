@@ -41,7 +41,7 @@ func (s *ShortcutManageService) CreateScript(name string, scriptType script.Scri
 	st, ok := repo.Get(id)
 
 	if !ok {
-		return nil, fmt.Errorf("could not find script with id : %s",id)
+		return nil, fmt.Errorf("could not find script with id : %s", id)
 	}
 
 	return st, nil

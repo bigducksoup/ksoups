@@ -37,13 +37,14 @@ func handleCreateScript(data []byte) (any, message.DataType, error) {
 		return nil, message.ERROR, err
 	}
 
-	script, err := service.ShortcutManage.CreateScript(c.Name, script.Shell, []byte(c.Content), nil)
+	script, err := service.ShortcutManage.CreateScript(c.Name, script.ScriptType(c.ScriptType), []byte(c.Content), c.Args)
 
 	if err != nil {
 		return nil, message.ERROR, err
 	}
 
 	resp := CreateScriptResp{
+		Id:      script.Id(),
 		Name:    c.Name,
 		AbsPath: script.Path(),
 	}

@@ -40,7 +40,7 @@ func (c *CenterConnection) Write(payload []byte) error {
 
 func (c *CenterConnection) Reconnect() error {
 	c.Close()
-	conn, err := net.Dial(c.Options.Address, string(c.Options.Transport))
+	conn, err := net.Dial(string(c.Options.Transport), c.Options.Address)
 
 	if err != nil {
 		return err
