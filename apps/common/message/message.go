@@ -3,11 +3,14 @@ package message
 type Type int
 
 const (
-	REQUEST        Type = 1
-	RESPONSE       Type = 2
-	HEARTBEAT      Type = 3
-	REGISTER       Type = 4
-	PROACTIVE_PUSH Type = 5
+	REQUEST Type = iota
+	RESPONSE
+	HEARTBEAT
+	REGISTER
+	PROACTIVE_PUSH
+	SREQUEST
+	MULTI_RESPONSE
+	MULTIR_ESPONSE_END
 )
 
 type Msg struct {

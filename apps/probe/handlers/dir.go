@@ -3,13 +3,14 @@ package handlers
 import (
 	"apps/common/message"
 	. "apps/common/message/data"
+	"apps/common/utils"
 	"apps/probe/service"
 	"strconv"
 )
 
 func handleReadDir(data []byte) (any, message.DataType, error) {
 	//将msg.Data解析为对应类型
-	dr, err := readData[DirRead](data)
+	dr, err := utils.Unmarshal[DirRead](data)
 
 	if err != nil {
 		return nil, message.ERROR, err
@@ -47,7 +48,7 @@ func handleReadDir(data []byte) (any, message.DataType, error) {
 
 func handleCreateDir(data []byte) (any, message.DataType, error) {
 
-	dc, err := readData[DirCreate](data)
+	dc, err := utils.Unmarshal[DirCreate](data)
 	if err != nil {
 		return nil, message.ERROR, err
 	}

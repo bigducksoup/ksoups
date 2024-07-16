@@ -2,6 +2,7 @@ package routers
 
 import (
 	"apps/center/api/handler"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,7 +23,7 @@ func InitShortcutRouter(e *gin.RouterGroup, middlewares ...gin.HandlerFunc) {
 		shortcutGroup.POST("/run", handler.RunShortcut)
 
 		// 实时快捷指令
-		shortcutGroup.POST("/realtime/run", handler.RealTimeRunShortcut)
+		shortcutGroup.POST("/run/async", handler.AsyncRunShortcut)
 
 		// 删除快捷指令
 		shortcutGroup.DELETE("/delete", handler.DeleteShortcut)

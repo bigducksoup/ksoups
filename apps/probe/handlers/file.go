@@ -3,13 +3,14 @@ package handlers
 import (
 	"apps/common/message"
 	. "apps/common/message/data"
+	"apps/common/utils"
 	"apps/probe/service"
 	filesystem "apps/probe/service/filesystem"
 	"strconv"
 )
 
 func handleReadFile(data []byte) (any, message.DataType, error) {
-	fileRead, err := readData[FileRead](data)
+	fileRead, err := utils.Unmarshal[FileRead](data)
 
 	if err != nil {
 
@@ -33,7 +34,7 @@ func handleReadFile(data []byte) (any, message.DataType, error) {
 
 func handleModifyFile(data []byte) (any, message.DataType, error) {
 
-	mf, err := readData[FileModify](data)
+	mf, err := utils.Unmarshal[FileModify](data)
 
 	if err != nil {
 		return nil, message.ERROR, err
@@ -63,7 +64,7 @@ func handleModifyFile(data []byte) (any, message.DataType, error) {
 
 func handleCreateFile(data []byte) (any, message.DataType, error) {
 
-	fc, err := readData[FileCreate](data)
+	fc, err := utils.Unmarshal[FileCreate](data)
 
 	if err != nil {
 		return nil, message.ERROR, err
@@ -91,7 +92,7 @@ func handleCreateFile(data []byte) (any, message.DataType, error) {
 
 func handleDeleteFile(data []byte) (any, message.DataType, error) {
 
-	fd, err := readData[FileDelete](data)
+	fd, err := utils.Unmarshal[FileDelete](data)
 
 	if err != nil {
 		return nil, message.ERROR, err

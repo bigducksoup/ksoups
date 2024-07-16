@@ -3,10 +3,12 @@ package shortcut
 import (
 	"apps/center/action"
 	"apps/center/model"
+	"apps/common/message/data"
 	"apps/common/utils"
 	"errors"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type RUNService struct {
@@ -14,65 +16,71 @@ type RUNService struct {
 	Db     *gorm.DB
 }
 
-func (r *RUNService) Run(id string) (out string, error error) {
+func (r *RUNService) Run(id string) (stdout string, stderr string, state model.ScriptRunState, err error) {
 
 	execTime := time.Now()
 	sc := model.Shortcut{}
 	tx := r.Db.First(&sc, "id = ?", id)
 
 	if tx.Error != nil {
-		return "", tx.Error
+		return "", "", 0, tx.Error
 	}
 
-	out, ok := r.Runner.Run(sc)
+	stdout, stderr, err = r.Runner.Run(sc)
 
 	go func() {
 		if r.Db != nil {
+			state := model.SCRIPT_RUN_SUCCESS
+			if err != nil {
+				state = model.SCRIPT_RUN_FAIL
+			} else if len(stderr) == 0 {
+				state = model.SCRIPT_RUN_ERR
+			}
 			r.Db.Create(&model.ShortcutExecLog{
 				Id:          utils.UUID(),
-				ShortcutId:  id,
-				Out:         out,
-				OK:          ok,
-				CreateTime:  time.Now(),
+				ShortcutId:  sc.Id,
+				StdOut:      stdout,
+				StdErr:      stderr,
+				State:       state,
 				ExecuteTime: execTime,
+				RunByChain:  false,
+				ChainId:     nil,
+				NodeId:      nil,
 			})
 		}
 	}()
 
-	if !ok {
-		error = errors.New(out)
-		return
-	}
 	return
 }
 
-func (r *RUNService) RealTimeRun(id string) (runId string, err error) {
-	execTime := time.Now()
+func (r *RUNService) AsyncRun(id string) (streams chan data.AsyncShortCutRespStream, err error) {
+	// execTime := time.Now()
 	sc := model.Shortcut{}
 	tx := r.Db.First(&sc, "id = ?", id)
 
 	if tx.Error != nil {
-		return "", tx.Error
+		return nil, tx.Error
 	}
 
-	runId, err = r.Runner.RealTimeRun(sc)
+	streams, err = r.Runner.RealTimeRun(sc)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	if r.Db != nil {
-		r.Db.Create(&model.ShortcutExecLog{
-			Id:          runId,
-			ShortcutId:  id,
-			Out:         "",
-			OK:          false,
-			CreateTime:  time.Now(),
-			ExecuteTime: execTime,
-		})
+		// TODO fix this
+		// r.Db.Create(&model.ShortcutExecLog{
+		// 	Id:          runId,
+		// 	ShortcutId:  id,
+		// 	Out:         "",
+		// 	OK:          false,
+		// 	CreateTime:  time.Now(),
+		// 	ExecuteTime: execTime,
+		// })
 	}
 
-	return runId, nil
+	return streams, nil
 }
 
 func (r *RUNService) RunHistory(id string) (runHistory []model.ShortcutExecLog, error error) {

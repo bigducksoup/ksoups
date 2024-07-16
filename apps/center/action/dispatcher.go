@@ -68,9 +68,15 @@ func (d *Dispatcher) Next() error {
 		d.Out = "no binding shortcut"
 	} else {
 		sc := d.shortcuts[binding.ShortcutId]
-		out, ok := d.Run(sc)
+		stdout, stderr, err := d.Run(sc)
+
+		if err != nil || len(stderr) != 0 {
+			d.Ok = false
+			d.Out = stderr
+		}
+
 		d.Ok = ok
-		d.Out = out
+		d.Out = stdout
 	}
 
 	d.PreNode = d.CurNode

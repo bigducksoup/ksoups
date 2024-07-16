@@ -16,3 +16,7 @@ type CreateScriptParams struct {
 	Name    string `json:"name" binding:"required" msg:"probeId 不能为空"`
 	Content string `json:"content"`
 }
+
+type RunScriptParams struct {
+	ShortcutId string `json:"shortcutId" binding:"required" msg:"请输入需要执行的shortcut的Id"`
+}

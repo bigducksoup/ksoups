@@ -7,20 +7,18 @@ import (
 	"apps/common/message/data"
 	"apps/common/utils"
 	"encoding/json"
-	"errors"
 	"time"
 )
 
 type Runner struct {
 }
 
-func (s *Runner) Run(sc model.Shortcut) (string, bool) {
+func (s *Runner) Run(sc model.Shortcut) (stdout string, stderr string, err error) {
 
 	runMeta := data.ShortcutRun{
 		Id:      sc.Id,
 		Type:    sc.Type,
 		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
-		JustRun: sc.JustRun,
 		Payload: sc.Payload,
 		Args:    sc.Args,
 	}
@@ -28,7 +26,7 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, runMeta, message.RUN_SHORTCUT)
 
 	if err != nil {
-		return err.Error(), false
+		return "", "", err
 	}
 
 	resp := data.ShortcutRunResp{}
@@ -36,56 +34,75 @@ func (s *Runner) Run(sc model.Shortcut) (string, bool) {
 	err = json.Unmarshal(bytes, &resp)
 
 	if err != nil {
-		return err.Error(), false
+		return "", "", err
 	}
 
-	if !resp.Ok {
-		return resp.StdErr, false
-	}
-	return resp.StdOut, true
+	return resp.StdOut, resp.StdErr, nil
 
 }
 
 // RealTimeRun run shortcut in a realtime way
 // after call it, the output of shortcut run operation will be pushed to center.
 // center handle it and push to ui by using websocket
-func (s *Runner) RealTimeRun(sc model.Shortcut) (id string, err error) {
+func (s *Runner) RealTimeRun(sc model.Shortcut) (streams chan data.AsyncShortCutRespStream, err error) {
 
-	shortcutRun := data.ShortcutRun{
-		Id:       utils.UUID(),
-		Type:     sc.Type,
-		Timeout:  time.Duration(sc.Timeout) * time.Millisecond,
-		JustRun:  false,
-		Payload:  sc.Payload,
-		RealTime: true,
+	shortcutRun := data.AsyncShortCutRun{
+		Id:      sc.Id,
+		Type:    sc.Type,
+		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
+		Payload: sc.Payload,
 	}
 
-	bytes, err := global.CenterServer.Ctx.Request(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT)
+	bytesChan, errch, err := global.CenterServer.Ctx.RequestResponses(sc.ProbeId, shortcutRun, message.RUN_SHORTCUT_ASYNC)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	resp := data.RealTimeShortcutRunResp{}
+	streams = make(chan data.AsyncShortCutRespStream, 5)
 
-	err = json.Unmarshal(bytes, &resp)
-
-	if err != nil {
-		return "", err
+	writeErr := func(e error) {
+		streams <- data.AsyncShortCutRespStream{
+			OutputType: data.INTERNAL_ERR,
+			Content:    e.Error(),
+		}
 	}
 
-	if !resp.Ok {
-		return "", errors.New(resp.Err)
-	}
+	go func() {
+		for {
+			select {
+			case err, ok := <-errch:
+				if !ok {
+					break
+				}
+				writeErr(err)
+				return
+			case bytes, ok := <-bytesChan:
 
-	return resp.RunId, nil
+				if !ok {
+					close(streams)
+					return
+				}
+
+				stream, err := utils.Unmarshal[data.AsyncShortCutRespStream](bytes)
+				if err != nil {
+					writeErr(err)
+					return
+				}
+				streams <- stream
+			}
+		}
+
+	}()
+
+	return streams, nil
+
 }
 
 func (s *Runner) ResultRun(sc *model.Shortcut) (*data.ShortcutRunResp, error) {
 	oneLineShortcutRun := data.ShortcutRun{
 		Type:    sc.Type,
 		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
-		JustRun: sc.JustRun,
 		Payload: sc.Payload,
 	}
 
@@ -123,7 +140,6 @@ func (n *NormalShortcutRunner) Run(sc model.Shortcut) (RunResult, error) {
 	oneLineShortcutRun := data.ShortcutRun{
 		Type:    sc.Type,
 		Timeout: time.Duration(sc.Timeout) * time.Millisecond,
-		JustRun: sc.JustRun,
 		Payload: sc.Payload,
 	}
 

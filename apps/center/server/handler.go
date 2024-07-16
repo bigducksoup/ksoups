@@ -1,66 +1,32 @@
 package server
 
 import (
-	"apps/center/api/ws"
 	"apps/center/server/core"
 	"apps/common/message"
-	"apps/common/message/data"
-	"encoding/json"
 	"errors"
-	"log"
 )
 
 func HandleResponse(msg message.Msg, serverContext *core.Context) error {
 
-	if msg.Type != message.RESPONSE {
-		return errors.New("msg type should be RESPONSE")
+	if msg.Type != message.RESPONSE && msg.Type != message.MULTI_RESPONSE && msg.Type != message.MULTIR_ESPONSE_END {
+		return errors.New("msg type should be RESPONSE or MULTIRESPONSE")
 	}
 
 	if msg.ErrMark {
-		log.Println(msg)
+		return errors.New("probe error occur")
 	}
 
-	err := serverContext.ReceiveResp(msg.Id, msg)
+	hasNext := false
 
-	if err != nil {
-		return err
+	if msg.Type == message.MULTI_RESPONSE {
+		hasNext = true
 	}
-	return nil
-}
 
-// HandleProActivePush just as its name
-// TODO look this
-func HandleProActivePush(msg message.Msg, serverContext *core.Context) error {
-
-	if msg.DataType == message.SHORTCUT_OUTPUT {
-		outPut := data.RealTimeShortcutOutPut{}
-		err := json.Unmarshal(msg.Data, &outPut)
-
-		if err != nil {
-			return err
-		}
-
-		// TODO record out put and update info in sqlite
-
-		commonMessage := struct {
-			MessageType string `json:"messageType"`
-			Json        string `json:"json"`
-		}{
-			MessageType: "100001",
-			Json:        string(msg.Data),
-		}
-
-		bytes, _ := json.Marshal(commonMessage)
-
-		ws.Pusher.SendMsg(ws.Msg[string]{
-			Type:    0,
-			Payload: string(bytes),
-		})
-
-		if err != nil {
-			return err
-		}
-
+	if msg.Type == message.MULTIR_ESPONSE_END {
+		hasNext = false
 	}
-	return nil
+
+	err := serverContext.ReceiveResp(msg.Id, msg, hasNext)
+
+	return err
 }

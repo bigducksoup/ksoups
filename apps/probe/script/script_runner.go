@@ -9,7 +9,7 @@ import (
 )
 
 type ScriptRunner interface {
-	Run(script Script) (stdOut []byte, stdErr []byte, err error)
+	Run(ctx context.Context, script Script) (stdOut []byte, stdErr []byte, err error)
 	RunAsync(ctx context.Context, script Script) (inPipe io.WriteCloser, outPipe io.ReadCloser, errPipe io.ReadCloser, err error)
 }
 
@@ -17,11 +17,11 @@ type ShellScriptRunner struct {
 }
 
 // Run script and return output
-func (s *ShellScriptRunner) Run(script Script) (stdOut []byte, stdErr []byte, err error) {
+func (s *ShellScriptRunner) Run(ctx context.Context, script Script) (stdOut []byte, stdErr []byte, err error) {
 
 	args := slices.Insert(script.Args(), 0, script.Path())
 
-	cmd := exec.Command("sh", args...)
+	cmd := exec.CommandContext(ctx, "sh", args...)
 
 	out, err := cmd.Output()
 

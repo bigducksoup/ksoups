@@ -91,18 +91,20 @@ func (c *Context) RemoveProbe(id string) {
 
 }
 
-func (c *Context) ReceiveResp(reqId string, resp message.Msg) error {
-	value, ok := c.respChanMap.Load(reqId)
+func (c *Context) ReceiveResp(reqId string, resp message.Msg, hasNext bool) error {
+	respChan, ok := c.respChanMap.Load(reqId)
 	if !ok {
 		return errors.New("no such message id")
 	}
 
-	channel := *value.(*chan message.Msg)
-
+	channel := respChan.(chan message.Msg)
 	channel <- resp
 
-	c.respChanMap.Delete(reqId)
-	close(channel)
+	if !hasNext || resp.DataType == message.ERROR {
+		c.respChanMap.Delete(reqId)
+		close(channel)
+	}
+
 	return nil
 }
 
@@ -167,17 +169,17 @@ func (c *Context) Request(id string, data any, dataType message.DataType) (res [
 	}
 
 	resChan := make(chan message.Msg)
-	c.respChanMap.Store(msg.Id, &resChan)
+	c.respChanMap.Store(msg.Id, resChan)
 	sendErr := c.SendMsg(id, msg)
 	if sendErr != nil {
-		return []byte{}, sendErr
+		return nil, sendErr
 	}
 
 	//等待返回结果，超时后返回错误
 	select {
 	case res := <-resChan:
 
-		if res.ErrMark {
+		if res.DataType == message.ERROR {
 			return nil, errors.New(string(res.Data))
 		}
 		return res.Data, nil
@@ -186,6 +188,52 @@ func (c *Context) Request(id string, data any, dataType message.DataType) (res [
 		close(resChan)
 		return []byte{}, errors.New("response time out reqId =" + msg.Id)
 	}
+
+}
+
+// request and get multi responses
+func (c *Context) RequestResponses(probeId string, data any, dataType message.DataType) (res chan []byte, errch chan error, err error) {
+
+	bytes, _ := json.Marshal(data)
+
+	msg := message.Msg{
+		Type:     message.SREQUEST,
+		Id:       utils.UUID(),
+		Data:     bytes,
+		ErrMark:  false,
+		DataType: dataType,
+	}
+
+	resChan := make(chan message.Msg, 10)
+	c.respChanMap.Store(msg.Id, resChan)
+
+	err = c.SendMsg(probeId, msg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dataChan := make(chan []byte, 10)
+	ech := make(chan error, 1)
+
+	go func() {
+		for m := range resChan {
+
+			if m.Type == message.MULTIR_ESPONSE_END {
+				continue
+			}
+
+			if m.DataType == message.ERROR {
+				ech <- errors.New(string(m.Data))
+				close(ech)
+				break
+			}
+			dataChan <- m.Data
+		}
+		close(ech)
+		close(dataChan)
+	}()
+
+	return dataChan, ech, nil
 
 }
 

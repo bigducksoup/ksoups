@@ -1,54 +1,67 @@
 package handlers
 
-// import (
-// 	"apps/common/message"
-// 	"apps/probe/common"
-// 	"encoding/json"
-// 	"errors"
-// 	"log"
-// )
+import (
+	"apps/common/message"
+	"apps/probe/connect"
+	"errors"
+)
 
-// func HandleMessage(msg message.Msg, connection *common.Connection) {
+var MessageHandler = map[message.Type]func(m message.Msg, p *connect.Probe){
+	message.REQUEST:  HandleRequest,
+	message.SREQUEST: HandleSRequest,
+}
 
-// 	policy, ok := msgHandlePolicy[msg.Type]
+func HandleRequest(m message.Msg, p *connect.Probe) {
+	// find data handler
+	dataHandler, ok := DataHandlePolicy[m.DataType]
 
-// 	if !ok {
-// 		connection.RespErr(msg.Id, errors.New("unknown message type , could not find handle policy"))
-// 		return
-// 	}
+	if !ok {
+		p.ReportErr(errors.New("no dataHandler could be found for this message"))
+		return
+	}
 
-// 	policy(msg, connection)
+	response, dataType, handleErr := dataHandler(m.Data)
 
-// }
+	if handleErr != nil {
+		p.ResponseErr(handleErr, m)
+		return
+	}
 
-// var msgHandlePolicy = map[message.Type]func(msg message.Msg, connection *common.Connection){
-// 	message.REQUEST: handleReq,
-// }
+	err := p.ResponseToCenter(m.Id, response, dataType)
 
-// func handleReq(msg message.Msg, connection *common.Connection) {
+	if err != nil {
+		p.ReportErr(err)
+	}
 
-// 	policy, ok := DataHandlePolicy[msg.DataType]
+}
 
-// 	if !ok {
-// 		connection.RespErr(msg.Id, errors.New("unknown data type , could not find handle policy"))
-// 		return
-// 	}
+func HandleSRequest(m message.Msg, p *connect.Probe) {
+	// find data handler
+	dataHandler, ok := DataHandlePolicy[m.DataType]
 
-// 	result, dataType, err := policy(msg.Data)
+	if !ok {
+		p.ReportErr(errors.New("no dataHandler could be found for this message"))
+		return
+	}
 
-// 	if err != nil {
-// 		connection.RespErr(msg.Id, err)
-// 		return
-// 	}
+	x, dataType, handleErr := dataHandler(m.Data)
 
-// 	bytes, _ := json.Marshal(result)
+	if handleErr != nil {
+		p.ResponseErr(handleErr, m)
+		return
+	}
 
-// 	msg.Type = message.RESPONSE
-// 	msg.Data = bytes
-// 	msg.DataType = dataType
-// 	err = connection.SendMessage(msg)
-// 	if err != nil {
-// 		log.Println(err)
-// 	}
+	// must return a chan any, and the dataType declears item in chan
+	xchan, ok := x.(chan any)
 
-// }
+	if !ok {
+		p.ResponseErr(errors.New("assertion fail"), m)
+		return
+	}
+
+	for resp := range xchan {
+		p.SendToCenter(m.Id, resp, dataType, message.MULTI_RESPONSE, false)
+	}
+
+	p.SendToCenter(m.Id, nil, dataType, message.MULTIR_ESPONSE_END, false)
+}

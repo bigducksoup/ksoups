@@ -24,7 +24,7 @@ type ProbeOptions struct {
 	MaxReconnectCount int
 	ReconnectGapTime  time.Duration
 	RegisterInfo      data.RegisterInfo
-	DataHandlers      map[message.DataType]func(data []byte) (any, message.DataType, error)
+	MessageHandlers   map[message.Type]func(m message.Msg, p *Probe)
 	BeforeStart       func(*Probe)
 	Encoder           func(v any) ([]byte, error)
 	Decoder           func(bytes []byte, v any) error
@@ -36,7 +36,7 @@ type Probe struct {
 	respChanMap        sync.Map
 	LocalAddress       string
 	ProbeOptions       ProbeOptions
-	DataHandlers       map[message.DataType]func(data []byte) (any, message.DataType, error)
+	MessageHandlers    map[message.Type]func(m message.Msg, p *Probe)
 	BeforStart         func(*Probe)
 	Encoder            func(v any) ([]byte, error)
 	Decoder            func(bytes []byte, v any) error
@@ -88,41 +88,11 @@ func (p *Probe) StartWorking() {
 				continue
 			}
 
-			switch msg.Type {
-			case message.RESPONSE:
-				// TODO handle response
-				p.respChanMap.Store(msg.Id, msg)
-			case message.REQUEST:
-				// find data handler
-				dataHandler, ok := p.DataHandlers[msg.DataType]
-
-				if !ok {
-					p.ReportErr(errors.New("no dataHandler could be found for this message"))
-					continue
-				}
-
-				// async use handler
-				go func() {
-					response, dataType, handleErr := dataHandler(msg.Data)
-
-					if handleErr != nil {
-						p.ResponseErr(handleErr, msg)
-						return
-					}
-
-					err = p.ResponseToCenter(msg.Id, response, dataType)
-
-					if err != nil {
-						p.ReportErr(err)
-						return
-					}
-
-				}()
-			case message.HEARTBEAT:
-				// handle heartbeat
-			case message.PROACTIVE_PUSH:
-				// handle push
+			handler, ok := p.MessageHandlers[msg.Type]
+			if !ok {
+				continue
 			}
+			go handler(msg, p)
 		}
 	}()
 
@@ -136,7 +106,6 @@ func (p *Probe) ReconnectToCenter() error {
 		log.Println("reconnecting to center....")
 
 		err := p.toCenterConnection.Reconnect()
-		
 
 		if err == nil {
 			rErr := p.RegisterToCenter()
@@ -258,7 +227,7 @@ func (p *Probe) Request(body any, dataType message.DataType, receiver any) error
 func (p *Probe) ResponseErr(err error, originMessage message.Msg) error {
 	log.Printf("Response error to center, error : %s", err.Error())
 
-	return p.SendToCenter(originMessage.Id, err.Error(), message.ERROR, message.RESPONSE, true)
+	return p.SendToCenter(originMessage.Id, err.Error(), message.ERROR, message.RESPONSE, false)
 }
 
 // ReportErr report error message to center
@@ -328,7 +297,7 @@ func InitProbe(options ProbeOptions) {
 			ProbeOptions:       options,
 			Encoder:            encoder,
 			Decoder:            decoder,
-			DataHandlers:       options.DataHandlers,
+			MessageHandlers:    options.MessageHandlers,
 		}
 
 	})

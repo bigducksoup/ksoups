@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"apps/common/message"
-	"encoding/json"
 )
 
 var DataHandlePolicy = map[message.DataType]func(data []byte) (any, message.DataType, error){
@@ -14,16 +13,5 @@ var DataHandlePolicy = map[message.DataType]func(data []byte) (any, message.Data
 	message.CREATE_DIR:    handleCreateDir,
 	message.CREATE_SCRIPT: handleCreateScript,
 	message.DELETE_FILE:   handleDeleteFile,
-}
-
-func readData[T any](data []byte) (T, error) {
-
-	res := new(T)
-
-	err := json.Unmarshal(data, res)
-	if err != nil {
-		return *res, err
-	}
-
-	return *res, nil
+	message.RUN_SHORTCUT_ASYNC: handleRunshortcutAsync,
 }

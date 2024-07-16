@@ -25,8 +25,9 @@ func InitCenterServer(port int, ctx context.Context) *core.CenterServer {
 		Port:            port,
 		Context:         ctx,
 		HandlePolicy: map[message.Type]func(msg message.Msg, serverContext *core.Context) error{
-			message.RESPONSE:       HandleResponse,
-			message.PROACTIVE_PUSH: HandleProActivePush,
+			message.RESPONSE:           HandleResponse,
+			message.MULTI_RESPONSE:     HandleResponse,
+			message.MULTIR_ESPONSE_END: HandleResponse,
 		},
 	})
 

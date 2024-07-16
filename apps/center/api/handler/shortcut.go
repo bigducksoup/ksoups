@@ -6,6 +6,8 @@ import (
 	"apps/center/global"
 	"apps/center/model"
 	"apps/center/service"
+	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
@@ -105,13 +107,15 @@ func ShortcutGroup(c *gin.Context) {
 // Err: 200, “fail”， {ok: false, out: err}
 func RunShortcut(c *gin.Context) {
 
-	scId, ok := c.GetQuery("shortcutId")
-	if !ok {
+	var runScriptParams param.RunScriptParams
+
+	err := c.ShouldBindJSON(&runScriptParams)
+	if err != nil {
 		c.JSON(http.StatusOK, response.ParamsError())
 		return
 	}
 
-	out, err := service.ShortcutRUN.Run(scId)
+	stdout, stderr, state, err := service.ShortcutRUN.Run(runScriptParams.ShortcutId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Success(gin.H{
@@ -122,36 +126,57 @@ func RunShortcut(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, response.Success(gin.H{
-		"ok":  true,
-		"out": out,
+		"state":  state,
+		"stdout": stdout,
+		"stderr": stderr,
 	}))
 }
 
-// RealTimeRunShortcut realtime run shortcut
+// AsyncRunShortcut realtime run shortcut
 // push result using websocket
 // TODO test
-func RealTimeRunShortcut(c *gin.Context) {
+func AsyncRunShortcut(c *gin.Context) {
 
-	scId, ok := c.GetQuery("shortcutId")
+	scriptId, ok := c.GetQuery("shortcutId")
 
 	if !ok {
 		c.JSON(http.StatusOK, response.ParamsError())
 		return
 	}
 
-	// call real time run
-	runId, err := service.ShortcutRUN.RealTimeRun(scId)
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+
+	w := c.Writer
+	flusher, ok := w.(http.Flusher)
+
+	if !ok {
+		c.JSON(http.StatusOK, response.StringFail("unknown error"))
+		return
+	}
+
+	streams, err := service.ShortcutRUN.AsyncRun(scriptId)
 
 	if err != nil {
 		c.JSON(http.StatusOK, response.Fail(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, response.Success(gin.H{
-		"ok":    true,
-		"runId": runId,
-	}))
+	for stream := range streams {
 
+		log.Println(stream.Content)
+
+		b, err := json.Marshal(stream)
+
+		if err != nil {
+			continue
+		}
+
+		w.Write(b)
+		w.Write([]byte("\n"))
+		flusher.Flush()
+	}
 }
 
 // ShortcutRunHistory 快捷方式运行历史

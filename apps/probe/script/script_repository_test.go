@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestA(t *testing.T) {
 
 	repo := NewShellScriptRepo("../../scripts")
 
-	id, err := repo.Store([]byte("echo helloworld"), "helloworld", nil)
+	id, err := repo.Store([]byte("sleep 5"), "helloworld", nil)
 
 	if err != nil {
 		t.Fatal(err)
@@ -24,7 +25,11 @@ func TestA(t *testing.T) {
 
 	scriptRunner := NewShellScriptRunner()
 
-	res, _, err := scriptRunner.Run(script)
+	ctx, cancel := context.WithTimeout(context.TODO(), 1*time.Second)
+
+	defer cancel()
+
+	res, _, err := scriptRunner.Run(ctx, script)
 
 	if err != nil {
 		t.Fatal(err)

@@ -3,28 +3,43 @@ package data
 import "time"
 
 type ShortcutRun struct {
-	Id   string `json:"id"`
-	Type int    `json:"type"`
+	Id string `json:"id"`
+	// 脚本类型
+	Type int `json:"type"`
 	//超时时间
 	Timeout time.Duration `json:"timeout"`
 	//仅运行，不处理结果
-	JustRun  bool   `json:"justRun"`
-	Payload  string `json:"payload"`
-	RealTime bool   `json:"realTime"`
-	Args     string
+	Payload string `json:"payload"`
+	Args    string
 }
 
 type ShortcutRunResp struct {
 	Ok     bool
-	Err    string
 	StdOut string
 	StdErr string
 }
 
-type RealTimeShortcutRunResp struct {
-	Ok    bool
-	Err   string
-	RunId string
+type AsyncShortCutRun struct {
+	Id string `json:"id"`
+	// 脚本类型
+	Type int `json:"type"`
+	//超时时间
+	Timeout time.Duration `json:"timeout"`
+	//仅运行，不处理结果
+	Payload string `json:"payload"`
+	Args    string
+}
+
+const (
+	STD_OUT = iota
+	STD_ERR
+	INTERNAL_ERR
+	END
+)
+
+type AsyncShortCutRespStream struct {
+	OutputType int    `json:"outputType"`
+	Content    string `json:"content"`
 }
 
 type RealTimeShortcutOutPut struct {

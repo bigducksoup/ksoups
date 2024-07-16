@@ -49,7 +49,7 @@ func main() {
 		Reconnect:         false,
 		ReconnectGapTime:  3 * time.Second,
 		MaxReconnectCount: 20,
-		DataHandlers:      handlers.DataHandlePolicy,
+		MessageHandlers:   handlers.MessageHandler,
 	})
 	connect.ProbeInstance.StartWorking()
 
